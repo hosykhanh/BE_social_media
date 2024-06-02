@@ -1,4 +1,10 @@
-import { IsString, IsEmail, IsOptional, IsDate } from 'class-validator';
+import {
+  IsString,
+  IsEmail,
+  IsOptional,
+  IsDate,
+  IsBoolean,
+} from 'class-validator';
 
 export class UpdateUserDto {
   @IsOptional()
@@ -28,4 +34,8 @@ export class UpdateUserDto {
   @IsOptional()
   @IsString()
   readonly address?: string;
+
+  @IsOptional()
+  @IsBoolean()
+  readonly isAdmin?: boolean;
 }
