@@ -4,6 +4,7 @@ import {
   IsOptional,
   IsDate,
   IsBoolean,
+  IsNumber,
 } from 'class-validator';
 
 export class UpdateUserDto {
@@ -29,7 +30,11 @@ export class UpdateUserDto {
 
   @IsOptional()
   @IsDate()
-  readonly date?: Date;
+  readonly dateOfBirth?: Date;
+
+  @IsOptional()
+  @IsNumber()
+  readonly phone?: number;
 
   @IsOptional()
   @IsString()

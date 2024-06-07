@@ -7,7 +7,8 @@ export interface User extends Document {
   password: string;
   confirmPassword: string;
   gender: string;
-  date: Date;
+  dateOfBirth: Date;
+  phone: number;
   address: string;
 }
 
