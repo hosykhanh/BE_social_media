@@ -10,6 +10,7 @@ export interface User extends Document {
   dateOfBirth: Date;
   phone: number;
   address: string;
+  isAdmin: boolean;
 }
 
 export const UserModel = mongoose.model<User>('User', UserSchema);
