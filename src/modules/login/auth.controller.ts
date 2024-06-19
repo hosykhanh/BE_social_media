@@ -1,4 +1,5 @@
-import { Controller, Post, Body } from '@nestjs/common';
+import { Controller, Post, Body, HttpStatus, Res } from '@nestjs/common';
+import { Response } from 'express';
 import { JwtAuthService } from './jwt.service';
 import { UserService } from '../users/user.service';
 
@@ -42,5 +43,24 @@ export class AuthController {
   @Post('refresh')
   async refresh(@Body('token') token: string) {
     return await this.jwtAuthService.refreshToken(token);
+  }
+
+  @Post('logout')
+  async logout(
+    @Body('refresh_token') refresh_token: string,
+    @Res() res: Response,
+  ) {
+    try {
+      res.clearCookie('refresh_token');
+
+      return res.status(HttpStatus.OK).json({
+        status: 'OK',
+        message: 'Logout successfully',
+      });
+    } catch (error) {
+      return res.status(HttpStatus.INTERNAL_SERVER_ERROR).json({
+        message: 'Internal server error',
+      });
+    }
   }
 }
