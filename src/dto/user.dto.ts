@@ -43,4 +43,8 @@ export class UpdateUserDto {
   @IsOptional()
   @IsBoolean()
   readonly isAdmin?: boolean;
+
+  @IsOptional()
+  @IsString()
+  readonly avatar?: string;
 }

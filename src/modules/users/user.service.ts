@@ -3,6 +3,7 @@ import { InjectModel } from '@nestjs/mongoose';
 import { Model } from 'mongoose';
 import { UpdateUserDto } from 'src/dto/user.dto';
 import { User } from 'src/models/user.model';
+import { v2 as cloudinary } from 'cloudinary';
 
 @Injectable()
 export class UserService {
@@ -49,5 +50,34 @@ export class UserService {
       this.logger.log(`User with ID ${id} not found for deletion`);
     }
     return deletedUser;
+  }
+
+  async updateAvatar(id: string, file: Express.Multer.File): Promise<string> {
+    try {
+      // Tải lên ảnh lên Cloudinary
+      const uploadedImage = await cloudinary.uploader.upload(file.path);
+      const avatarUrl = uploadedImage.secure_url;
+
+      // Cập nhật đường dẫn avatar vào cơ sở dữ liệu
+      const updatedUser = await this.userModel.findByIdAndUpdate(
+        id,
+        { avatar: avatarUrl },
+        { new: true }, // Trả về dữ liệu sau khi đã cập nhật
+      );
+
+      if (updatedUser) {
+        this.logger.log(`Updated avatar for user with ID ${id}`);
+      } else {
+        this.logger.log(`User with ID ${id} not found`);
+      }
+
+      return avatarUrl;
+    } catch (error) {
+      this.logger.error(
+        `Failed to update avatar for user with ID ${id}`,
+        error.stack,
+      );
+      throw error;
+    }
   }
 }

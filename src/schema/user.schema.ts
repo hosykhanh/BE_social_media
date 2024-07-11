@@ -5,11 +5,12 @@ const UserSchema = new mongoose.Schema({
   email: { type: String, required: true, unique: true },
   password: { type: String, required: true },
   confirmPassword: { type: String, required: true },
-  gender: { type: String },
-  dateOfBirth: { type: Date },
+  gender: { type: String, default: 'Other' },
+  dateOfBirth: { type: Date, default: new Date('2000-01-01T00:00:00Z') },
   phone: { type: Number },
   address: { type: String },
   isAdmin: { type: Boolean, default: false },
+  avatar: { type: String, default: '' },
 });
 
 // Middleware để kiểm tra confirmPassword

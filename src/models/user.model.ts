@@ -11,6 +11,7 @@ export interface User extends Document {
   phone: number;
   address: string;
   isAdmin: boolean;
+  avatar: string;
 }
 
 export const UserModel = mongoose.model<User>('User', UserSchema);
