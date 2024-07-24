@@ -54,9 +54,16 @@ export class UserService {
 
   async updateAvatar(id: string, file: Express.Multer.File): Promise<string> {
     try {
-      // Tải lên ảnh lên Cloudinary
-      const uploadedImage = await cloudinary.uploader.upload(file.path);
-      const avatarUrl = uploadedImage.secure_url;
+      const uploadedImage = await new Promise((resolve, reject) => {
+        cloudinary.uploader
+          .upload_stream({ folder: 'avatars' }, (error, result) => {
+            if (error) return reject(error);
+            resolve(result);
+          })
+          .end(file.buffer);
+      });
+
+      const avatarUrl = (uploadedImage as any).secure_url;
 
       // Cập nhật đường dẫn avatar vào cơ sở dữ liệu
       const updatedUser = await this.userModel.findByIdAndUpdate(

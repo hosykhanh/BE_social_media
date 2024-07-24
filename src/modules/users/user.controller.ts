@@ -52,7 +52,7 @@ export class UserController {
   }
 
   @Put(':id/avatar')
-  @UseInterceptors(FileInterceptor('file'))
+  @UseInterceptors(FileInterceptor('avatar'))
   async updateAvatar(
     @Param('id') id: string,
     @UploadedFile() file: Express.Multer.File,
