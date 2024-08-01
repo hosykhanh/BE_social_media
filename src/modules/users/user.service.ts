@@ -52,7 +52,10 @@ export class UserService {
     return deletedUser;
   }
 
-  async updateAvatar(id: string, file: Express.Multer.File): Promise<string> {
+  async updateAvatar(
+    id: string,
+    file: Express.Multer.File,
+  ): Promise<User | null> {
     try {
       const uploadedImage = await new Promise((resolve, reject) => {
         cloudinary.uploader
@@ -78,7 +81,7 @@ export class UserService {
         this.logger.log(`User with ID ${id} not found`);
       }
 
-      return avatarUrl;
+      return updatedUser;
     } catch (error) {
       this.logger.error(
         `Failed to update avatar for user with ID ${id}`,

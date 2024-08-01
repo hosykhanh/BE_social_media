@@ -42,8 +42,13 @@ export class UserController {
   async updateUser(
     @Param('id') id: string,
     @Body() updateUserDto: UpdateUserDto,
-  ): Promise<User | null> {
-    return this.userService.updateUser(id, updateUserDto);
+  ): Promise<{ status: string; message: string; data: User | null }> {
+    const data = await this.userService.updateUser(id, updateUserDto);
+    return {
+      status: 'OK',
+      message: 'Update successful',
+      data,
+    };
   }
 
   @Delete(':id')
@@ -56,7 +61,7 @@ export class UserController {
   async updateAvatar(
     @Param('id') id: string,
     @UploadedFile() file: Express.Multer.File,
-  ): Promise<string> {
+  ): Promise<User | null> {
     return await this.userService.updateAvatar(id, file);
   }
 }
