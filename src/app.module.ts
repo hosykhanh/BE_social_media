@@ -3,6 +3,7 @@ import { AppController } from './app.controller';
 import { AppService } from './app.service';
 import { DatabaseModule } from './modules/database/database.module';
 import { UserModule } from './modules/users/user.module';
+import { PostsModule } from './modules/posts/posts.module';
 import { AuthModule } from './modules/login/auth.module';
 import { ConfigModule, ConfigService } from '@nestjs/config';
 import { CloudinaryModule } from 'nestjs-cloudinary';
@@ -24,6 +25,7 @@ import { CloudinaryModule } from 'nestjs-cloudinary';
     DatabaseModule,
     UserModule,
     AuthModule,
+    PostsModule,
   ],
   controllers: [AppController],
   providers: [AppService],
