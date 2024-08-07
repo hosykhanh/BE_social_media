@@ -14,10 +14,6 @@ export class CreatePostDto {
   user: object;
 
   @IsOptional()
-  @IsObject()
-  comment: object;
-
-  @IsOptional()
   createdAt?: Date;
 
   @IsOptional()
@@ -40,10 +36,6 @@ export class UpdatePostDto {
   @IsOptional()
   @IsObject()
   user?: object;
-
-  @IsOptional()
-  @IsObject()
-  comment?: object;
 
   @IsOptional()
   @IsString()

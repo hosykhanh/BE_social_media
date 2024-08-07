@@ -1,18 +1,20 @@
 import { IsString, IsNumber, IsObject, IsOptional } from 'class-validator';
 
 export class CreateCommentDto {
+  @IsString()
+  content: string;
+
+  @IsString()
+  image: string;
+
+  @IsNumber()
+  like?: number;
+
   @IsObject()
   user: object;
 
   @IsObject()
   posts: object;
-
-  @IsString()
-  content: string;
-
-  @IsOptional()
-  @IsNumber()
-  like?: number;
 
   @IsOptional()
   createdAt?: Date;
@@ -23,6 +25,18 @@ export class CreateCommentDto {
 
 export class UpdateCommentDto {
   @IsOptional()
+  @IsString()
+  content?: string;
+
+  @IsOptional()
+  @IsString()
+  image?: string;
+
+  @IsOptional()
+  @IsNumber()
+  like?: number;
+
+  @IsOptional()
   @IsObject()
   user?: object;
 
@@ -32,15 +46,9 @@ export class UpdateCommentDto {
 
   @IsOptional()
   @IsString()
-  content?: string;
-
-  @IsOptional()
-  @IsNumber()
-  like?: number;
-
-  @IsOptional()
   createdAt?: Date;
 
   @IsOptional()
+  @IsString()
   updatedAt?: Date;
 }
