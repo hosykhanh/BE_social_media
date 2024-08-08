@@ -7,6 +7,7 @@ import { PostsModule } from './modules/posts/posts.module';
 import { AuthModule } from './modules/login/auth.module';
 import { ConfigModule, ConfigService } from '@nestjs/config';
 import { CloudinaryModule } from 'nestjs-cloudinary';
+import { CommentModule } from './modules/comment/comment.module';
 
 @Module({
   imports: [
@@ -26,6 +27,7 @@ import { CloudinaryModule } from 'nestjs-cloudinary';
     UserModule,
     AuthModule,
     PostsModule,
+    CommentModule,
   ],
   controllers: [AppController],
   providers: [AppService],
