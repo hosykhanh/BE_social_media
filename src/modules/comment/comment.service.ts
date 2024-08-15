@@ -52,6 +52,10 @@ export class CommentService {
       .exec();
   }
 
+  async getCommentsByPostId(postId: string): Promise<Comment[]> {
+    return this.commentModel.find({ posts: postId }).populate('user').exec();
+  }
+
   async updateComment(
     id: string,
     updateCommentDto: UpdateCommentDto,
