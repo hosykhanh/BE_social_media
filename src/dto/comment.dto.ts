@@ -1,4 +1,10 @@
-import { IsString, IsNumber, IsObject, IsOptional } from 'class-validator';
+import {
+  IsString,
+  IsNumber,
+  IsObject,
+  IsOptional,
+  IsDate,
+} from 'class-validator';
 
 export class CreateCommentDto {
   @IsString()
@@ -45,10 +51,10 @@ export class UpdateCommentDto {
   posts?: object;
 
   @IsOptional()
-  @IsString()
+  @IsDate()
   createdAt?: Date;
 
   @IsOptional()
-  @IsString()
+  @IsDate()
   updatedAt?: Date;
 }

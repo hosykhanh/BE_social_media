@@ -1,4 +1,10 @@
-import { IsString, IsNumber, IsObject, IsOptional } from 'class-validator';
+import {
+  IsString,
+  IsNumber,
+  IsObject,
+  IsOptional,
+  IsDate,
+} from 'class-validator';
 
 export class CreatePostDto {
   @IsString()
@@ -38,10 +44,10 @@ export class UpdatePostDto {
   user?: object;
 
   @IsOptional()
-  @IsString()
+  @IsDate()
   createdAt?: Date;
 
   @IsOptional()
-  @IsString()
+  @IsDate()
   updatedAt?: Date;
 }
