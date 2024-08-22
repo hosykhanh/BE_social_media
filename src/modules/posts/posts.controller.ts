@@ -37,6 +37,11 @@ export class PostsController {
     return this.postsService.getPostsById(id);
   }
 
+  @Get(':userId/post')
+  async getPostsByUserId(@Param('userId') userId: string): Promise<Posts[]> {
+    return this.postsService.getPostsByUserId(userId);
+  }
+
   @Put(':id')
   @UseInterceptors(FileInterceptor('image'))
   async updatePosts(

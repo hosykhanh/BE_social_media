@@ -46,7 +46,7 @@ export class LikeController {
     return this.likeService.getLikeByPostId(postId);
   }
 
-  @Delete('id')
+  @Delete(':id')
   async deleteLike(@Param('id') id: string): Promise<Like | null> {
     return this.likeService.deleteLike(id);
   }

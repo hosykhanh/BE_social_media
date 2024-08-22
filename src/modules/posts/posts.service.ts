@@ -48,6 +48,10 @@ export class PostsService {
     return this.postsModel.findById(id).populate('user').exec();
   }
 
+  async getPostsByUserId(userId: string): Promise<Posts[]> {
+    return this.postsModel.find({ user: userId }).populate('user').exec();
+  }
+
   async updatePosts(
     id: string,
     updatePostDto: UpdatePostDto,
