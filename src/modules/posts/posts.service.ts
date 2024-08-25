@@ -15,12 +15,17 @@ export class PostsService {
   private async uploadImageToCloudinary(
     file: Express.Multer.File,
   ): Promise<string> {
+    const resourceType = file.mimetype.startsWith('video') ? 'video' : 'image';
+
     const uploadedImage = await new Promise((resolve, reject) => {
       cloudinary.uploader
-        .upload_stream({ folder: 'posts' }, (error, result) => {
-          if (error) return reject(error);
-          resolve(result);
-        })
+        .upload_stream(
+          { resource_type: resourceType, folder: 'posts' },
+          (error, result) => {
+            if (error) return reject(error);
+            resolve(result);
+          },
+        )
         .end(file.buffer);
     });
 
