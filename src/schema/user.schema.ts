@@ -12,6 +12,17 @@ const UserSchema = new mongoose.Schema(
     address: { type: String },
     isAdmin: { type: Boolean, default: false },
     avatar: { type: String, default: '' },
+    friends: [{ type: mongoose.Schema.Types.ObjectId, ref: 'User' }],
+    friendRequests: [
+      {
+        from: { type: mongoose.Schema.Types.ObjectId, ref: 'User' },
+        status: {
+          type: String,
+          enum: ['pending', 'accepted', 'rejected'],
+          default: 'pending',
+        },
+      },
+    ],
   },
   {
     timestamps: true,

@@ -46,15 +46,18 @@ export class PostsService {
   }
 
   async getAllPosts(): Promise<Posts[]> {
-    return this.postsModel.find().populate('user').exec();
+    return this.postsModel.find().populate('user', '-password').exec();
   }
 
   async getPostsById(id: string): Promise<Posts> {
-    return this.postsModel.findById(id).populate('user').exec();
+    return this.postsModel.findById(id).populate('user', '-password').exec();
   }
 
   async getPostsByUserId(userId: string): Promise<Posts[]> {
-    return this.postsModel.find({ user: userId }).populate('user').exec();
+    return this.postsModel
+      .find({ user: userId })
+      .populate('user', '-password')
+      .exec();
   }
 
   async updatePosts(

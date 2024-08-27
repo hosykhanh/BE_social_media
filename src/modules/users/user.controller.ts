@@ -38,6 +38,11 @@ export class UserController {
     return this.userService.findByEmail(email);
   }
 
+  @Get(':id/sent-requests')
+  async getSentRequests(@Param('id') id: string): Promise<User[]> {
+    return this.userService.getSentFriendRequests(id);
+  }
+
   @Put(':id')
   async updateUser(
     @Param('id') id: string,
@@ -51,9 +56,36 @@ export class UserController {
     };
   }
 
-  @Delete(':id')
-  async deleteUser(@Param('id') id: string): Promise<User | null> {
-    return this.userService.deleteUser(id);
+  @Put(':id/friends')
+  async addFriend(
+    @Param('id') id: string,
+    @Body('friendId') friendId: string,
+  ): Promise<User | null> {
+    return await this.userService.addFriend(id, friendId);
+  }
+
+  @Put(':id/friends/request')
+  async addFriendRequest(
+    @Param('id') id: string,
+    @Body('friendId') friendId: string,
+  ): Promise<User | null> {
+    return await this.userService.addFriendRequest(id, friendId);
+  }
+
+  @Put(':id/friends/accept')
+  async acceptFriendRequest(
+    @Param('id') id: string,
+    @Body('friendId') friendId: string,
+  ): Promise<User | null> {
+    return await this.userService.acceptFriendRequest(id, friendId);
+  }
+
+  @Put(':id/friends/reject')
+  async rejectFriendRequest(
+    @Param('id') id: string,
+    @Body('friendId') friendId: string,
+  ): Promise<User | null> {
+    return await this.userService.rejectFriendRequest(id, friendId);
   }
 
   @Put(':id/avatar')
@@ -63,5 +95,10 @@ export class UserController {
     @UploadedFile() file: Express.Multer.File,
   ): Promise<User | null> {
     return await this.userService.updateAvatar(id, file);
+  }
+
+  @Delete(':id')
+  async deleteUser(@Param('id') id: string): Promise<User | null> {
+    return this.userService.deleteUser(id);
   }
 }

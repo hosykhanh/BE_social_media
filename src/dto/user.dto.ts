@@ -5,7 +5,9 @@ import {
   IsDate,
   IsBoolean,
   IsNumber,
+  IsArray,
 } from 'class-validator';
+import { Types } from 'mongoose';
 
 export class UpdateUserDto {
   @IsOptional()
@@ -47,4 +49,15 @@ export class UpdateUserDto {
   @IsOptional()
   @IsString()
   readonly avatar?: string;
+
+  @IsOptional()
+  @IsArray()
+  friends?: Types.ObjectId[];
+
+  @IsOptional()
+  @IsArray()
+  friendRequests?: {
+    from: Types.ObjectId;
+    status: string;
+  }[];
 }

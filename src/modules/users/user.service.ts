@@ -1,6 +1,6 @@
 import { Injectable, Logger } from '@nestjs/common';
 import { InjectModel } from '@nestjs/mongoose';
-import { Model } from 'mongoose';
+import { Model, Types } from 'mongoose';
 import { UpdateUserDto } from 'src/dto/user.dto';
 import { User } from 'src/models/user.model';
 import { v2 as cloudinary } from 'cloudinary';
@@ -89,5 +89,105 @@ export class UserService {
       );
       throw error;
     }
+  }
+
+  async addFriend(userId: string, friendId: string): Promise<User | null> {
+    const friendObjectId = new Types.ObjectId(friendId);
+    const user = await this.userModel
+      .findByIdAndUpdate(
+        userId,
+        {
+          $push: { friends: friendObjectId },
+        },
+        { new: true },
+      )
+      .exec();
+    return user;
+  }
+
+  async addFriendRequest(
+    fromUserId: string,
+    toUserId: string,
+  ): Promise<User | null> {
+    const user = await this.userModel.findById(toUserId);
+    if (user) {
+      const fromUserObjectId = new Types.ObjectId(fromUserId); // Chuyển đổi fromUserId thành ObjectId
+      user.friendRequests.push({ from: fromUserObjectId, status: 'pending' }); // Thêm yêu cầu kết bạn
+      return user.save(); // Lưu lại thay đổi
+    }
+    return null;
+  }
+
+  async acceptFriendRequest(
+    userId: string,
+    friendId: string,
+  ): Promise<User | null> {
+    try {
+      const friendObjectId = new Types.ObjectId(friendId);
+      const user = await this.userModel
+        .findByIdAndUpdate(
+          userId,
+          {
+            $pull: { friendRequests: { from: friendObjectId } }, // Remove the request from the friendRequests array
+            $push: { friends: friendObjectId }, // Add to the friends array
+          },
+          { new: true },
+        )
+        .exec();
+
+      if (!user) {
+        this.logger.error(`Failed to accept friend request: User not found`);
+        throw new Error('User not found');
+      }
+
+      // Add the user to the friend's friends array
+      await this.userModel
+        .findByIdAndUpdate(friendId, {
+          $push: { friends: new Types.ObjectId(userId) },
+        })
+        .exec();
+
+      return user;
+    } catch (error) {
+      this.logger.error(`Failed to accept friend request: ${error.message}`);
+      throw new Error('Failed to accept friend request');
+    }
+  }
+
+  async rejectFriendRequest(
+    userId: string,
+    friendId: string,
+  ): Promise<User | null> {
+    try {
+      const friendObjectId = new Types.ObjectId(friendId);
+      const user = await this.userModel
+        .findByIdAndUpdate(
+          userId,
+          {
+            $pull: { friendRequests: { from: friendObjectId } }, // Remove the request from the friendRequests array
+          },
+          { new: true },
+        )
+        .exec();
+
+      if (!user) {
+        this.logger.error(`Failed to reject friend request: User not found`);
+        throw new Error('User not found');
+      }
+
+      return user;
+    } catch (error) {
+      this.logger.error(`Failed to reject friend request: ${error.message}`);
+      throw new Error('Failed to reject friend request');
+    }
+  }
+
+  async getSentFriendRequests(userId: string): Promise<User[]> {
+    const user = await this.userModel
+      .find({ 'friendRequests.from': userId })
+      .select('-password')
+      .exec();
+
+    return user;
   }
 }

@@ -21,7 +21,10 @@ export class LikeService {
   }
 
   async getLikeByPostId(postId: string): Promise<Like[]> {
-    return this.likeModel.find({ posts: postId }).populate('user').exec();
+    return this.likeModel
+      .find({ posts: postId })
+      .populate('user', '-password')
+      .exec();
   }
 
   async updateLike(
