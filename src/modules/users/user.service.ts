@@ -27,6 +27,18 @@ export class UserService {
     return this.userModel.findOne({ email }).exec();
   }
 
+  async searchUsers(userId: string, search: string): Promise<User[]> {
+    const users = await this.userModel
+      .find({
+        _id: { $ne: userId },
+        name: { $regex: search, $options: 'i' },
+      })
+      .select('-password')
+      .exec();
+
+    return users;
+  }
+
   async updateUser(
     id: string,
     updateUserDto: UpdateUserDto,

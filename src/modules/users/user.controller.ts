@@ -8,6 +8,7 @@ import {
   Delete,
   UseInterceptors,
   UploadedFile,
+  Query,
 } from '@nestjs/common';
 import { UserService } from './user.service';
 import { User } from 'src/models/user.model';
@@ -36,6 +37,14 @@ export class UserController {
   @Get('byEmail/:email')
   async findByEmail(@Param('email') email: string): Promise<User | null> {
     return this.userService.findByEmail(email);
+  }
+
+  @Get(':id/suggestions')
+  async searchUsers(
+    @Param('id') id: string,
+    @Query('search') search: string,
+  ): Promise<User[]> {
+    return this.userService.searchUsers(id, search);
   }
 
   @Get(':id/sent-requests')
