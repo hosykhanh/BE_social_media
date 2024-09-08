@@ -9,6 +9,8 @@ import { ConfigModule, ConfigService } from '@nestjs/config';
 import { CloudinaryModule } from 'nestjs-cloudinary';
 import { CommentModule } from './modules/comment/comment.module';
 import { LikeModule } from './modules/like/like.module';
+import { ChatRoomModule } from './modules/chatRoom/chatRoom.module';
+import { MessageModule } from './modules/messages/message.module';
 
 @Module({
   imports: [
@@ -30,6 +32,8 @@ import { LikeModule } from './modules/like/like.module';
     PostsModule,
     CommentModule,
     LikeModule,
+    ChatRoomModule,
+    MessageModule,
   ],
   controllers: [AppController],
   providers: [AppService],
