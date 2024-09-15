@@ -49,6 +49,12 @@ export class ChatRoomController {
     return this.chatRoomService.findById(id);
   }
 
+  @Get('user/:userId')
+  async getChatRoomsByUserId(@Param('userId') userId: string) {
+    const chatRooms = await this.chatRoomService.findChatRoomsByUserId(userId);
+    return chatRooms;
+  }
+
   @Put(':id')
   async updateChatRoom(
     @Param('id') id: string,

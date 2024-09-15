@@ -21,6 +21,18 @@ export class ChatRoomService {
     userId: string,
     otherUserId: string,
   ): Promise<ChatRoom> {
+    // Kiểm tra xem phòng chat giữa 2 người đã tồn tại hay chưa
+    const existingChatRoom = await this.chatRoomModel
+      .findOne({
+        participants: { $all: [userId, otherUserId] },
+      })
+      .exec();
+
+    if (existingChatRoom) {
+      return existingChatRoom; // Nếu đã có phòng chat, trả về phòng chat đó
+    }
+
+    // Nếu chưa có phòng chat, tạo mới
     const newChatRoom = new this.chatRoomModel({
       participants: [userId, otherUserId],
     });
@@ -34,6 +46,13 @@ export class ChatRoomService {
 
   async findById(id: string): Promise<ChatRoom> {
     return this.chatRoomModel.findById(id).exec();
+  }
+
+  async findChatRoomsByUserId(userId: string): Promise<ChatRoom[]> {
+    return await this.chatRoomModel
+      .find({ participants: userId })
+      .populate('participants')
+      .exec();
   }
 
   async addParticipant(chatRoomId: string, userId: string): Promise<ChatRoom> {
