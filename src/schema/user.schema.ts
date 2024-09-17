@@ -11,7 +11,11 @@ const UserSchema = new mongoose.Schema(
     phone: { type: Number },
     address: { type: String },
     isAdmin: { type: Boolean, default: false },
-    avatar: { type: String, default: '' },
+    avatar: {
+      type: String,
+      default:
+        'https://res.cloudinary.com/hsk-social-medial/image/upload/v1726421417/avatars/gmf4f2azhtnyib0tq3xo.jpg',
+    },
     friends: [{ type: mongoose.Schema.Types.ObjectId, ref: 'User' }],
     friendRequests: [
       {

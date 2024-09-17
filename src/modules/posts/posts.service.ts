@@ -15,6 +15,12 @@ export class PostsService {
   private async uploadImageToCloudinary(
     file: Express.Multer.File,
   ): Promise<string> {
+    // Log ra thông tin của tệp được upload từ phía client
+    console.log('File received from client:', {
+      originalname: file.originalname,
+      mimetype: file.mimetype,
+      size: file.size,
+    });
     const resourceType = file.mimetype.startsWith('video') ? 'video' : 'image';
 
     const uploadedImage = await new Promise((resolve, reject) => {
