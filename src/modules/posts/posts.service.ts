@@ -4,6 +4,7 @@ import { Model } from 'mongoose';
 import { CreatePostDto, UpdatePostDto } from 'src/dto/posts.dto';
 import { Posts } from 'src/models/posts.model';
 import { v2 as cloudinary } from 'cloudinary';
+import { createHash } from 'crypto';
 
 @Injectable()
 export class PostsService {
@@ -15,18 +16,36 @@ export class PostsService {
   private async uploadImageToCloudinary(
     file: Express.Multer.File,
   ): Promise<string> {
-    // Log ra thông tin của tệp được upload từ phía client
-    console.log('File received from client:', {
-      originalname: file.originalname,
-      mimetype: file.mimetype,
-      size: file.size,
-    });
     const resourceType = file.mimetype.startsWith('video') ? 'video' : 'image';
 
+    // Tạo MD5 hash của file
+    const fileHash = createHash('md5').update(file.buffer).digest('hex');
+
+    try {
+      // Tìm kiếm file trên Cloudinary bằng MD5 hash
+      const existingImage = await cloudinary.search
+        .expression(
+          `resource_type:${resourceType} AND folder:posts AND context.hash:${fileHash}`,
+        )
+        .execute();
+
+      // Nếu file đã tồn tại, trả về URL của nó
+      if (existingImage.resources && existingImage.resources.length > 0) {
+        return existingImage.resources[0].secure_url;
+      }
+    } catch (error) {
+      console.error('Error checking existing image on Cloudinary:', error);
+    }
+
+    // Nếu không tìm thấy, tải file lên Cloudinary
     const uploadedImage = await new Promise((resolve, reject) => {
       cloudinary.uploader
         .upload_stream(
-          { resource_type: resourceType, folder: 'posts' },
+          {
+            resource_type: resourceType,
+            folder: 'posts',
+            context: { hash: fileHash },
+          },
           (error, result) => {
             if (error) return reject(error);
             resolve(result);
@@ -48,7 +67,8 @@ export class PostsService {
     }
     const postData = { ...createPostDto, image: imageUrl };
     const createdPost = new this.postsModel(postData);
-    return createdPost.save();
+    const savedPost = await createdPost.save();
+    return this.postsModel.findById(savedPost._id).populate('user').exec();
   }
 
   async getAllPosts(): Promise<Posts[]> {

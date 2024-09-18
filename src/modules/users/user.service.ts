@@ -4,6 +4,7 @@ import { Model, Types } from 'mongoose';
 import { UpdateUserDto } from 'src/dto/user.dto';
 import { User } from 'src/models/user.model';
 import { v2 as cloudinary } from 'cloudinary';
+import { createHash } from 'crypto';
 
 @Injectable()
 export class UserService {
@@ -69,16 +70,37 @@ export class UserService {
     file: Express.Multer.File,
   ): Promise<User | null> {
     try {
-      const uploadedImage = await new Promise((resolve, reject) => {
-        cloudinary.uploader
-          .upload_stream({ folder: 'avatars' }, (error, result) => {
-            if (error) return reject(error);
-            resolve(result);
-          })
-          .end(file.buffer);
-      });
+      // Tạo MD5 hash của file buffer
+      const fileHash = createHash('md5').update(file.buffer).digest('hex');
 
-      const avatarUrl = (uploadedImage as any).secure_url;
+      // Tìm kiếm file avatar trên Cloudinary bằng MD5 hash
+      const existingAvatar = await cloudinary.search
+        .expression(
+          `resource_type:image AND folder:avatars AND context.hash:${fileHash}`,
+        )
+        .execute();
+
+      let avatarUrl: string;
+
+      // Nếu avatar đã tồn tại, trả về URL của avatar
+      if (existingAvatar.resources && existingAvatar.resources.length > 0) {
+        avatarUrl = existingAvatar.resources[0].secure_url;
+      } else {
+        // Nếu không tìm thấy avatar, tải file lên Cloudinary
+        const uploadedImage = await new Promise((resolve, reject) => {
+          cloudinary.uploader
+            .upload_stream(
+              { folder: 'avatars', context: { hash: fileHash } },
+              (error, result) => {
+                if (error) return reject(error);
+                resolve(result);
+              },
+            )
+            .end(file.buffer);
+        });
+
+        avatarUrl = (uploadedImage as any).secure_url;
+      }
 
       // Cập nhật đường dẫn avatar vào cơ sở dữ liệu
       const updatedUser = await this.userModel.findByIdAndUpdate(

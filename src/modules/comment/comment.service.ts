@@ -37,7 +37,8 @@ export class CommentService {
     }
     const postData = { ...createCommentDto, image: imageUrl };
     const createdComment = new this.commentModel(postData);
-    return createdComment.save();
+    const savedComment = await createdComment.save();
+    return this.commentModel.findById(savedComment._id).populate('user').exec();
   }
 
   async getAllComment(): Promise<Comment[]> {
