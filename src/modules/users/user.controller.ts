@@ -106,8 +106,36 @@ export class UserController {
     return await this.userService.updateAvatar(id, file);
   }
 
+  @Delete('delete-many')
+  async deleteManyUser(
+    @Body('ids') ids: string[],
+  ): Promise<{ status: string; message: string; deletedCount: number }> {
+    const result = await this.userService.deleteManyUser(ids);
+    const deletedCount = result.deletedCount;
+    return {
+      status: 'OK',
+      message: 'Delete successful',
+      deletedCount,
+    };
+  }
+
   @Delete(':id')
-  async deleteUser(@Param('id') id: string): Promise<User | null> {
-    return this.userService.deleteUser(id);
+  async deleteUser(
+    @Param('id') id: string,
+  ): Promise<{ status: string; message: string; data: User | null }> {
+    const data = await this.userService.deleteUser(id);
+    if (data) {
+      return {
+        status: 'OK',
+        message: `User with ID ${id} deleted successfully`,
+        data,
+      };
+    } else {
+      return {
+        status: 'NOT_FOUND',
+        message: `User with ID ${id} not found`,
+        data: null,
+      };
+    }
   }
 }

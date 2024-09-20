@@ -65,6 +65,24 @@ export class UserService {
     return deletedUser;
   }
 
+  async deleteManyUser(ids: string[]): Promise<{ deletedCount: number }> {
+    const result = await this.userModel
+      .deleteMany({ _id: { $in: ids } })
+      .exec();
+
+    if (result.deletedCount > 0) {
+      this.logger.log(
+        `Deleted ${result.deletedCount} users with IDs: ${ids.join(', ')}`,
+      );
+    } else {
+      this.logger.log(
+        `No users found for deletion with provided IDs: ${ids.join(', ')}`,
+      );
+    }
+
+    return { deletedCount: result.deletedCount };
+  }
+
   async updateAvatar(
     id: string,
     file: Express.Multer.File,
