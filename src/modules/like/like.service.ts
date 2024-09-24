@@ -9,6 +9,13 @@ export class LikeService {
   constructor(@InjectModel('Like') private readonly likeModel: Model<Like>) {}
 
   async createLike(createLikeDto: CreateLikeDto): Promise<Like> {
+    const existingLike = await this.likeModel.findOne({
+      user: createLikeDto.user,
+      posts: createLikeDto.posts,
+    });
+    if (existingLike) {
+      return existingLike;
+    }
     const createdLike = new this.likeModel(createLikeDto);
     return createdLike.save();
   }
