@@ -51,7 +51,7 @@ export class ChatRoomService {
   async findChatRoomsByUserId(userId: string): Promise<ChatRoom[]> {
     return await this.chatRoomModel
       .find({ participants: userId })
-      .populate('participants')
+      // .populate('participants')
       .exec();
   }
 

@@ -8,7 +8,10 @@ import {
 } from '@nestjs/websockets';
 import { Server, Socket } from 'socket.io';
 
-@WebSocketGateway({ cors: { origin: '*' } })
+@WebSocketGateway(8800, {
+  cors: { origin: 'http://localhost:3000' },
+  credentials: true,
+})
 export class ChatGateway
   implements OnGatewayInit, OnGatewayConnection, OnGatewayDisconnect
 {
@@ -43,15 +46,13 @@ export class ChatGateway
   @SubscribeMessage('send-message')
   handleMessage(
     socket: Socket,
-    messageData: { receiverId: string; message: any }, // `message` chứa toàn bộ đối tượng message
+    messageData: { receiverId: string; content: any },
   ) {
     const user = this.activeUsers.find(
       (user) => user.userId === messageData.receiverId,
     );
     if (user) {
-      this.server
-        .to(user.socketId)
-        .emit('receive-message', messageData.message);
+      this.server.to(user.socketId).emit('receive-message', messageData);
       console.log('Sending message from', socket.id, 'to', user.socketId);
     }
   }

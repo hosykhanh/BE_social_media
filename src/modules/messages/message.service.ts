@@ -20,7 +20,6 @@ export class MessageService {
     const populatedMessage = await this.messageModel
       .findById(createdMessage._id)
       .populate('chatRoom')
-      .populate('sender')
       .exec();
 
     // Gán kiểu rõ ràng cho `chatRoom`
