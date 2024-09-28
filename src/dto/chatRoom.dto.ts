@@ -12,6 +12,10 @@ export class ChatRoomDto {
 
   @IsOptional()
   @IsDate()
+  lastMessageSentAt?: Date;
+
+  @IsOptional()
+  @IsDate()
   createdAt?: Date;
 
   @IsOptional()

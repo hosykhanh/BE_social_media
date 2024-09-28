@@ -4,6 +4,7 @@ import { ChatRoomSchema } from 'src/schema/chatRoom.schema';
 export interface ChatRoom extends Document {
   participants: Types.ObjectId[];
   nameRoom: string;
+  lastMessageSentAt: Date;
   createdAt?: Date;
   updatedAt?: Date;
 }
