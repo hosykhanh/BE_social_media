@@ -1,6 +1,6 @@
 import { Injectable } from '@nestjs/common';
 import { InjectModel } from '@nestjs/mongoose';
-import { Model, Types } from 'mongoose';
+import { Model } from 'mongoose';
 import { CreateMessageDto } from 'src/dto/message.dto';
 import { Message } from 'src/models/message.model';
 import { ChatGateway } from '../chatSocket/chat.gateway';
@@ -20,29 +20,16 @@ export class MessageService {
     const populatedMessage = await this.messageModel
       .findById(createdMessage._id)
       .populate('chatRoom')
+      .populate('sender')
       .exec();
-
-    // Gán kiểu rõ ràng cho `chatRoom`
-    const chatRoom = populatedMessage.chatRoom as unknown as {
-      participants: Types.ObjectId[];
-    };
-
-    // Gửi tin nhắn cho tất cả người tham gia ngoại trừ người gửi
-    chatRoom.participants.forEach((participantId: Types.ObjectId) => {
-      if (
-        participantId.toString() !==
-        (populatedMessage.sender as any)._id.toString()
-      ) {
-        this.chatGateway.server
-          .to(participantId.toString())
-          .emit('receive-message', populatedMessage);
-      }
-    });
 
     return populatedMessage;
   }
 
   async findAllMessages(chatRoomId: string): Promise<Message[]> {
-    return this.messageModel.find({ chatRoom: chatRoomId }).exec();
+    return this.messageModel
+      .find({ chatRoom: chatRoomId })
+      .populate('sender')
+      .exec();
   }
 }
