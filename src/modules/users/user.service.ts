@@ -1,19 +1,91 @@
 import { Injectable, Logger } from '@nestjs/common';
 import { InjectModel } from '@nestjs/mongoose';
 import { Model, Types } from 'mongoose';
-import { UpdateUserDto } from 'src/dto/user.dto';
+import { CreateUserDto, UpdateUserDto } from 'src/dto/user.dto';
 import { User } from 'src/models/user.model';
 import { v2 as cloudinary } from 'cloudinary';
 import { createHash } from 'crypto';
+import * as moment from 'moment';
+
+import { ChatRoomService } from '../chatRoom/chatRoom.service';
 
 @Injectable()
 export class UserService {
   private readonly logger = new Logger(UserService.name);
-  constructor(@InjectModel('User') private readonly userModel: Model<User>) {}
+  constructor(
+    @InjectModel('User') private readonly userModel: Model<User>,
+    private readonly chatRoomService: ChatRoomService,
+  ) {}
 
-  async create(createUserDto: any): Promise<User> {
+  async create(createUserDto: CreateUserDto): Promise<User> {
     const createdUser = new this.userModel(createUserDto);
     return createdUser.save();
+  }
+
+  async createUsersFromExcel(data: any[]) {
+    const className = data[0][1];
+
+    function ExcelDateToJSDate(excelDate) {
+      const date = new Date(Math.floor((excelDate - 25569) * 86400 * 1000));
+      return date;
+    }
+
+    const users: CreateUserDto[] = data.slice(3).map((row) => ({
+      maSo: row[0],
+      name: row[1],
+      dateOfBirth: moment(ExcelDateToJSDate(row[2])).toDate(),
+      gender: row[3],
+      address: row[4],
+      email: `${row[0]}@gmail.com`,
+      password: `${row[0]}abc`,
+      confirmPassword: `${row[0]}abc`,
+    }));
+
+    const userIds: Types.ObjectId[] = [];
+
+    for (const user of users) {
+      if (!user.maSo || !user.name) {
+        console.error(
+          `Missing required fields for user: ${JSON.stringify(user)}`,
+        );
+        continue; // Bỏ qua nếu thiếu thông tin
+      }
+
+      const existingUser = await this.userModel.findOne({ email: user.email });
+
+      if (existingUser) {
+        console.log(
+          `User with email ${user.email} already exists, skipping...`,
+        );
+        userIds.push(existingUser._id as Types.ObjectId);
+        continue;
+      }
+
+      // Tạo mới người dùng nếu chưa tồn tại
+      try {
+        const newUser = await this.create(user);
+        userIds.push(newUser._id as Types.ObjectId);
+        console.log(`Created user: ${user.email}`);
+      } catch (error) {
+        console.error(`Error creating user ${user.email}:`, error);
+      }
+    }
+
+    // Tạo phòng chat sau khi tạo tất cả người dùng
+    if (userIds.length > 2) {
+      try {
+        await this.chatRoomService.createChatRoom({
+          participants: userIds,
+          nameRoom: className,
+        });
+        console.log(`Created chat room for class: ${className}`);
+      } catch (error) {
+        console.error(
+          `Error creating chat room for class ${className}:`,
+          error,
+        );
+      }
+    }
   }
 
   async findAll(): Promise<User[]> {

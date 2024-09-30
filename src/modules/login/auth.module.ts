@@ -6,10 +6,12 @@ import { AuthController } from './auth.controller';
 import { UserService } from '../users/user.service';
 import { MongooseModule } from '@nestjs/mongoose';
 import { UserSchema } from '../../schema/user.schema';
+import { ChatRoomModule } from '../chatRoom/chatRoom.module';
 
 @Module({
   imports: [
     ConfigModule, // Ensure ConfigModule is imported
+    ChatRoomModule,
     JwtModule.registerAsync({
       imports: [ConfigModule], // Import ConfigModule here as well
       inject: [ConfigService],

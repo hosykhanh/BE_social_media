@@ -2,6 +2,8 @@ import mongoose, { Document, Types } from 'mongoose';
 import { UserSchema } from 'src/schema/user.schema';
 
 export interface User extends Document {
+  maSo: string;
+  career: string;
   name: string;
   email: string;
   password: string;

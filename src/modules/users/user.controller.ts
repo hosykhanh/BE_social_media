@@ -12,16 +12,27 @@ import {
 } from '@nestjs/common';
 import { UserService } from './user.service';
 import { User } from 'src/models/user.model';
-import { UpdateUserDto } from 'src/dto/user.dto';
+import { CreateUserDto, UpdateUserDto } from 'src/dto/user.dto';
 import { FileInterceptor } from '@nestjs/platform-express';
+import * as XLSX from 'xlsx';
 
 @Controller('users')
 export class UserController {
   constructor(private readonly userService: UserService) {}
 
   @Post()
-  async create(@Body() createUserDto: any) {
+  async create(@Body() createUserDto: CreateUserDto) {
     return this.userService.create(createUserDto);
+  }
+
+  @Post('upload-file-excel')
+  @UseInterceptors(FileInterceptor('file'))
+  async uploadFile(@UploadedFile() file: Express.Multer.File) {
+    const workbook = XLSX.read(file.buffer, { type: 'buffer' });
+    const worksheet = workbook.Sheets[workbook.SheetNames[0]];
+    const data = XLSX.utils.sheet_to_json(worksheet, { header: 1 }); // Sử dụng header: 1 để lấy dữ liệu dạng mảng
+    await this.userService.createUsersFromExcel(data);
+    return { message: 'Users created successfully!' };
   }
 
   @Get()
