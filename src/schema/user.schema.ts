@@ -16,7 +16,7 @@ const UserSchema = new mongoose.Schema(
     avatar: {
       type: String,
       default:
-        'https://res.cloudinary.com/hsk-social-medial/image/upload/v1726421417/avatars/gmf4f2azhtnyib0tq3xo.jpg',
+        'https://res.cloudinary.com/di5subxsf/image/upload/v1727855470/avatars/vwbwpthtm7azpmm442sr.jpg',
     },
     friends: [{ type: mongoose.Schema.Types.ObjectId, ref: 'User' }],
     friendRequests: [

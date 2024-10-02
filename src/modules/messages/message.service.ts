@@ -1,4 +1,4 @@
-import { Injectable } from '@nestjs/common';
+import { Injectable, Logger } from '@nestjs/common';
 import { InjectModel } from '@nestjs/mongoose';
 import { Model } from 'mongoose';
 import { CreateMessageDto } from 'src/dto/message.dto';
@@ -7,6 +7,7 @@ import { ChatGateway } from '../chatSocket/chat.gateway';
 
 @Injectable()
 export class MessageService {
+  private readonly logger = new Logger(MessageService.name);
   constructor(
     @InjectModel('Message') private readonly messageModel: Model<Message>,
     private readonly chatGateway: ChatGateway, // Inject ChatGateway to emit events
@@ -31,5 +32,33 @@ export class MessageService {
       .find({ chatRoom: chatRoomId })
       .populate('sender')
       .exec();
+  }
+
+  async deleteMessage(id: string): Promise<Message | null> {
+    const deletedMessage = await this.messageModel.findByIdAndDelete(id).exec();
+    if (deletedMessage) {
+      this.logger.log(`Deleted posts with ID ${id}`);
+    } else {
+      this.logger.log(`Posts with ID ${id} not found for deletion`);
+    }
+    return deletedMessage;
+  }
+
+  async deleteMessagesByChatRoom(
+    chatRoomId: string,
+  ): Promise<{ deletedCount: number }> {
+    const result = await this.messageModel
+      .deleteMany({ chatRoom: chatRoomId })
+      .exec();
+
+    if (result.deletedCount > 0) {
+      this.logger.log(
+        `Deleted ${result.deletedCount} messages from chat room with ID ${chatRoomId}`,
+      );
+    } else {
+      this.logger.log(`No messages found for chat room with ID ${chatRoomId}`);
+    }
+
+    return { deletedCount: result.deletedCount };
   }
 }
