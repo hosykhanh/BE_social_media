@@ -7,6 +7,7 @@ export interface Comment extends Document {
   image: string;
   user: object;
   posts: object;
+  parentComment?: string;
   createdAt?: Date;
   updatedAt?: Date;
 }

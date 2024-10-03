@@ -23,6 +23,10 @@ export class CreateCommentDto {
   posts: object;
 
   @IsOptional()
+  @IsString()
+  parentComment?: string;
+
+  @IsOptional()
   createdAt?: Date;
 
   @IsOptional()
@@ -49,6 +53,10 @@ export class UpdateCommentDto {
   @IsOptional()
   @IsObject()
   posts?: object;
+
+  @IsOptional()
+  @IsString()
+  parentComment?: string;
 
   @IsOptional()
   @IsDate()

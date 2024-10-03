@@ -46,7 +46,7 @@ export class CommentService {
       .find()
       .populate('user', '-password')
       .populate('posts')
-      .exec(); //.populate('user', 'name email') Chỉ lấy trường name và email từ user
+      .exec();
   }
 
   async getCommentById(id: string): Promise<Comment> {
@@ -61,6 +61,12 @@ export class CommentService {
     return this.commentModel
       .find({ posts: postId })
       .populate('user', '-password')
+      .exec();
+  }
+
+  async getReplies(parentCommentId: string): Promise<Comment[]> {
+    return await this.commentModel
+      .find({ parentComment: parentCommentId })
       .exec();
   }
 

@@ -42,6 +42,13 @@ export class CommentController {
     return this.commentService.getCommentsByPostId(postId);
   }
 
+  @Get('replies/:parentCommentId')
+  async getReplies(
+    @Param('parentCommentId') parentCommentId: string,
+  ): Promise<Comment[]> {
+    return this.commentService.getReplies(parentCommentId);
+  }
+
   @Put(':id')
   @UseInterceptors(FileInterceptor('image'))
   async updateComment(
