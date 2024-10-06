@@ -116,4 +116,22 @@ export class PostsService {
     }
     return deletedPosts;
   }
+
+  async deleteManyPost(ids: string[]): Promise<{ deletedCount: number }> {
+    const result = await this.postsModel
+      .deleteMany({ _id: { $in: ids } })
+      .exec();
+
+    if (result.deletedCount > 0) {
+      this.logger.log(
+        `Deleted ${result.deletedCount} posts with IDs: ${ids.join(', ')}`,
+      );
+    } else {
+      this.logger.log(
+        `No post found for deletion with provided IDs: ${ids.join(', ')}`,
+      );
+    }
+
+    return { deletedCount: result.deletedCount };
+  }
 }

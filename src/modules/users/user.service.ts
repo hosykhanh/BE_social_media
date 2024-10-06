@@ -235,9 +235,19 @@ export class UserService {
   ): Promise<User | null> {
     const user = await this.userModel.findById(toUserId);
     if (user) {
-      const fromUserObjectId = new Types.ObjectId(fromUserId); // Chuyển đổi fromUserId thành ObjectId
-      user.friendRequests.push({ from: fromUserObjectId, status: 'pending' }); // Thêm yêu cầu kết bạn
-      return user.save(); // Lưu lại thay đổi
+      const fromUserObjectId = new Types.ObjectId(fromUserId);
+      // Kiểm tra xem yêu cầu kết bạn từ fromUserId đã tồn tại hay chưa
+      const existingRequest = user.friendRequests.find(
+        (request) =>
+          request.from.toString() === fromUserId &&
+          request.status === 'pending',
+      );
+
+      if (existingRequest) {
+        return user;
+      }
+      user.friendRequests.push({ from: fromUserObjectId, status: 'pending' });
+      return user.save();
     }
     return null;
   }
@@ -313,5 +323,37 @@ export class UserService {
       .exec();
 
     return user;
+  }
+
+  async deleteSentFriendRequest(
+    fromUserId: string,
+    toUserId: string,
+  ): Promise<User | null> {
+    try {
+      const fromUserObjectId = new Types.ObjectId(fromUserId);
+      const user = await this.userModel
+        .findByIdAndUpdate(
+          toUserId, // Tìm người nhận
+          {
+            $pull: { friendRequests: { from: fromUserObjectId } }, // Xoá yêu cầu từ người gửi
+          },
+          { new: true },
+        )
+        .exec();
+
+      if (!user) {
+        this.logger.error(
+          `Failed to delete sent friend request: User not found`,
+        );
+        throw new Error('User not found');
+      }
+
+      return user;
+    } catch (error) {
+      this.logger.error(
+        `Failed to delete sent friend request: ${error.message}`,
+      );
+      throw new Error('Failed to delete sent friend request');
+    }
   }
 }

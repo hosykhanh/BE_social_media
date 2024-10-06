@@ -61,4 +61,17 @@ export class PostsController {
   async deletePosts(@Param('id') id: string): Promise<Posts | null> {
     return this.postsService.deletePosts(id);
   }
+
+  @Delete('delete-many')
+  async deleteManyPosts(
+    @Body('ids') ids: string[],
+  ): Promise<{ status: string; message: string; deletedCount: number }> {
+    const result = await this.postsService.deleteManyPost(ids);
+    const deletedCount = result.deletedCount;
+    return {
+      status: 'OK',
+      message: 'Delete successful',
+      deletedCount,
+    };
+  }
 }
