@@ -44,6 +44,11 @@ export class ChatRoomController {
     return this.chatRoomService.findAll();
   }
 
+  @Get('groups')
+  async findAllGroupChats(): Promise<ChatRoom[]> {
+    return this.chatRoomService.findAllGroupChats();
+  }
+
   @Get(':id')
   async findById(@Param('id') id: string): Promise<ChatRoom> {
     return this.chatRoomService.findById(id);
@@ -72,7 +77,27 @@ export class ChatRoomController {
   }
 
   @Delete(':id')
-  async deleteChatRoom(@Param('id') id: string): Promise<ChatRoom> {
-    return this.chatRoomService.deleteChatRoom(id);
+  async deleteChatRoom(
+    @Param('id') id: string,
+  ): Promise<{ status: string; message: string; result: ChatRoom | null }> {
+    const result = await this.chatRoomService.deleteChatRoom(id);
+    return {
+      status: 'OK',
+      message: 'Delete successful',
+      result,
+    };
+  }
+
+  @Delete('delete-many')
+  async deleteManyPosts(
+    @Body('ids') ids: string[],
+  ): Promise<{ status: string; message: string; deletedCount: number }> {
+    const result = await this.chatRoomService.deleteManyChatRoom(ids);
+    const deletedCount = result.deletedCount;
+    return {
+      status: 'OK',
+      message: 'Delete successful',
+      deletedCount,
+    };
   }
 }

@@ -28,11 +28,22 @@ export class UserController {
   @Post('upload-file-excel')
   @UseInterceptors(FileInterceptor('file'))
   async uploadFile(@UploadedFile() file: Express.Multer.File) {
-    const workbook = XLSX.read(file.buffer, { type: 'buffer' });
-    const worksheet = workbook.Sheets[workbook.SheetNames[0]];
-    const data = XLSX.utils.sheet_to_json(worksheet, { header: 1 }); // Sử dụng header: 1 để lấy dữ liệu dạng mảng
-    await this.userService.createUsersFromExcel(data);
-    return { message: 'Users created successfully!' };
+    try {
+      const workbook = XLSX.read(file.buffer, { type: 'buffer' });
+      const worksheet = workbook.Sheets[workbook.SheetNames[0]];
+      const data = XLSX.utils.sheet_to_json(worksheet, { header: 1 }); // Sử dụng header: 1 để lấy dữ liệu dạng mảng
+      const dataChat = await this.userService.createUsersFromExcel(data);
+      return {
+        status: 'success',
+        message: 'Users and group chat created successfully!',
+        data: dataChat,
+      };
+    } catch (error) {
+      return {
+        status: 'error',
+        message: 'An error occurred during file processing!',
+      };
+    }
   }
 
   @Get()

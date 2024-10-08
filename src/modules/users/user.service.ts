@@ -72,9 +72,10 @@ export class UserService {
     }
 
     // Tạo phòng chat sau khi tạo tất cả người dùng
+    let chatRoom;
     if (userIds.length > 2) {
       try {
-        await this.chatRoomService.createChatRoom({
+        chatRoom = await this.chatRoomService.createChatRoom({
           participants: userIds,
           nameRoom: className,
         });
@@ -86,6 +87,7 @@ export class UserService {
         );
       }
     }
+    return chatRoom;
   }
 
   async findAll(): Promise<User[]> {

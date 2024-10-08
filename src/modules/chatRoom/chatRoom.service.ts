@@ -44,8 +44,16 @@ export class ChatRoomService {
     return this.chatRoomModel.find().exec();
   }
 
+  async findAllGroupChats(): Promise<ChatRoom[]> {
+    return this.chatRoomModel
+      .find({
+        $expr: { $gte: [{ $size: '$participants' }, 3] },
+      })
+      .exec();
+  }
+
   async findById(id: string): Promise<ChatRoom> {
-    return this.chatRoomModel.findById(id).exec();
+    return this.chatRoomModel.findById(id).populate('participants').exec();
   }
 
   async findChatRoomsByUserId(userId: string): Promise<ChatRoom[]> {
@@ -91,5 +99,23 @@ export class ChatRoomService {
 
   async deleteChatRoom(chatRoomId: string): Promise<ChatRoom> {
     return this.chatRoomModel.findByIdAndDelete(chatRoomId).exec();
+  }
+
+  async deleteManyChatRoom(ids: string[]): Promise<{ deletedCount: number }> {
+    const result = await this.chatRoomModel
+      .deleteMany({ _id: { $in: ids } })
+      .exec();
+
+    if (result.deletedCount > 0) {
+      this.logger.log(
+        `Deleted ${result.deletedCount} chatRoom with IDs: ${ids.join(', ')}`,
+      );
+    } else {
+      this.logger.log(
+        `No chatRoom found for deletion with provided IDs: ${ids.join(', ')}`,
+      );
+    }
+
+    return { deletedCount: result.deletedCount };
   }
 }

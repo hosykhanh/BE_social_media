@@ -58,8 +58,15 @@ export class PostsController {
   }
 
   @Delete(':id')
-  async deletePosts(@Param('id') id: string): Promise<Posts | null> {
-    return this.postsService.deletePosts(id);
+  async deletePosts(
+    @Param('id') id: string,
+  ): Promise<{ status: string; message: string; data: Posts | null }> {
+    const data = await this.postsService.deletePosts(id);
+    return {
+      status: 'OK',
+      message: 'Delete successful',
+      data,
+    };
   }
 
   @Delete('delete-many')
