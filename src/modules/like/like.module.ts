@@ -14,5 +14,6 @@ import { PostsSchema } from 'src/schema/posts.schema';
   ],
   providers: [LikeService],
   controllers: [LikeController],
+  exports: [LikeService],
 })
 export class LikeModule {}

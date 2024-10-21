@@ -42,6 +42,11 @@ export class PostsController {
     return this.postsService.getPostsByUserId(userId);
   }
 
+  @Get('weight/posts')
+  async getPostsSortedByWeight() {
+    return this.postsService.getPostsSortedByWeight();
+  }
+
   @Put(':id')
   @UseInterceptors(FileInterceptor('image'))
   async updatePosts(
@@ -55,6 +60,28 @@ export class PostsController {
       message: 'Update successful',
       data,
     };
+  }
+
+  @Put('weight/all')
+  async updateAllPostWeights(): Promise<{
+    status: string;
+    message: string;
+    data: Posts[] | null;
+  }> {
+    try {
+      const data = await this.postsService.updateAllPostWeights();
+      return {
+        status: 'OK',
+        message: 'All posts weights updated successfully',
+        data,
+      };
+    } catch (error) {
+      return {
+        status: 'ERROR',
+        message: error.message || 'Failed to update posts weights',
+        data: null,
+      };
+    }
   }
 
   @Delete(':id')

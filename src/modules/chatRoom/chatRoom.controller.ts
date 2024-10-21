@@ -92,6 +92,9 @@ export class ChatRoomController {
   async deleteManyPosts(
     @Body('ids') ids: string[],
   ): Promise<{ status: string; message: string; deletedCount: number }> {
+    if (!Array.isArray(ids) || ids.length === 0) {
+      throw new Error('IDs array is required and cannot be empty');
+    }
     const result = await this.chatRoomService.deleteManyChatRoom(ids);
     const deletedCount = result.deletedCount;
     return {

@@ -19,6 +19,10 @@ export class CreatePostDto {
   @IsObject()
   user: object;
 
+  @IsNumber()
+  @IsOptional()
+  weight: number;
+
   @IsOptional()
   createdAt?: Date;
 
@@ -42,6 +46,10 @@ export class UpdatePostDto {
   @IsOptional()
   @IsObject()
   user?: object;
+
+  @IsNumber()
+  @IsOptional()
+  weight: number;
 
   @IsOptional()
   @IsDate()

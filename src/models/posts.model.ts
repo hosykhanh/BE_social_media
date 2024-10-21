@@ -6,6 +6,7 @@ export interface Posts extends Document {
   description: string;
   favorites: number;
   user: object;
+  weight: number;
   createdAt?: Date;
   updatedAt?: Date;
 }
