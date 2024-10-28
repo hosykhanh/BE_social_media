@@ -7,14 +7,16 @@ import { v2 as cloudinary } from 'cloudinary';
 import { createHash } from 'crypto';
 import { LikeService } from '../like/like.service';
 import { CommentService } from '../comment/comment.service';
+import { UserService } from '../users/user.service';
 
 @Injectable()
 export class PostsService {
   private readonly logger = new Logger(PostsService.name);
   constructor(
     @InjectModel('Posts') private readonly postsModel: Model<Posts>,
-    private readonly likeService: LikeService, // Inject LikeService
+    private readonly likeService: LikeService,
     private readonly commentService: CommentService,
+    private readonly userService: UserService,
   ) {}
 
   private async uploadImageToCloudinary(
@@ -90,12 +92,64 @@ export class PostsService {
       .exec();
   }
 
-  async getPostsSortedByWeight(): Promise<Posts[]> {
-    return this.postsModel
+  async getPostsSortedByWeight(userId: string): Promise<Posts[]> {
+    // Lấy thông tin người dùng hiện tại để có danh sách bạn bè
+    const currentUser = await this.userService.findById(userId);
+    if (!currentUser) {
+      throw new NotFoundException(`User with ID ${userId} not found`);
+    }
+    const friendsList = currentUser.friends.map((friend) => friend.toString());
+
+    // Lấy tất cả các bài viết
+    const posts = await this.postsModel
       .find()
-      .sort({ weight: -1 }) // Sắp xếp theo trọng số giảm dần
       .populate('user', '-password')
       .exec();
+
+    // Tính trọng số động cho mỗi bài viết
+    const postsWithDynamicWeight = await Promise.all(
+      posts.map(async (post) => {
+        const postId = post._id.toString();
+        const postUserId = post.user._id.toString();
+
+        // Lấy số lượt thích và bình luận cho từng bài viết
+        const likes = await this.likeService.getLikeByPostId(postId);
+        const likeCount = likes.length;
+
+        const comments = await this.commentService.getCommentsByPostId(postId);
+        const commentCount = comments.length;
+
+        // Tính thời gian từ lúc bài viết được đăng (theo giờ)
+        const timeSincePosted =
+          (Date.now() - post.createdAt.getTime()) / (1000 * 60 * 60);
+
+        // Hệ số cho công thức tính trọng số
+        const alpha = 1; // Trọng số cho lượt thích
+        const beta = 2; // Trọng số cho lượt bình luận
+        const delta = -0.1; // Trọng số cho thời gian
+
+        // Tính trọng số cơ bản
+        let weight =
+          alpha * likeCount + beta * commentCount + delta * timeSincePosted;
+
+        // Ưu tiên bài viết của bạn bè
+        if (friendsList.includes(postUserId)) {
+          weight += 50;
+        }
+
+        // Ưu tiên bài viết của chính người dùng hiện tại
+        if (postUserId === userId) {
+          weight += 100;
+        }
+
+        return { ...post.toObject(), weight };
+      }),
+    );
+
+    // Sắp xếp bài viết theo trọng số giảm dần
+    postsWithDynamicWeight.sort((a, b) => b.weight - a.weight);
+
+    return postsWithDynamicWeight as Posts[];
   }
 
   async updatePosts(
@@ -117,39 +171,6 @@ export class PostsService {
       .findByIdAndUpdate(id, updatePostDto, { new: true })
       .exec();
     return updatedPost;
-  }
-
-  async updateAllPostWeights(): Promise<Posts[]> {
-    const posts = await this.postsModel.find().exec();
-
-    // Duyệt qua từng bài viết để tính và cập nhật trọng số
-    for (const post of posts) {
-      const postId = post._id.toString();
-
-      const likes = await this.likeService.getLikeByPostId(postId);
-      const likeCount = likes.length;
-
-      const comments = await this.commentService.getCommentsByPostId(postId);
-      const commentCount = comments.length;
-
-      // Tính thời gian từ lúc bài viết được đăng (theo giờ)
-      const timeSincePosted =
-        (Date.now() - post.createdAt.getTime()) / (1000 * 60 * 60); // Chuyển từ ms sang giờ
-
-      // Hệ số cho công thức tính trọng số
-      const alpha = 1; // Trọng số cho lượt thích
-      const beta = 2; // Trọng số cho lượt bình luận
-      const delta = -0.1; // Trọng số cho thời gian (giảm dần theo thời gian)
-
-      // Tính trọng số theo công thức
-      const weight =
-        alpha * likeCount + beta * commentCount + delta * timeSincePosted;
-
-      post.weight = weight;
-      await post.save();
-    }
-
-    return posts;
   }
 
   async deletePosts(id: string): Promise<Posts | null> {

@@ -6,6 +6,7 @@ import { PostsSchema } from 'src/schema/posts.schema';
 import { UserSchema } from 'src/schema/user.schema';
 import { LikeModule } from '../like/like.module';
 import { CommentModule } from '../comment/comment.module';
+import { UserModule } from '../users/user.module';
 
 @Module({
   imports: [
@@ -13,6 +14,7 @@ import { CommentModule } from '../comment/comment.module';
     MongooseModule.forFeature([{ name: 'User', schema: UserSchema }]),
     LikeModule,
     CommentModule,
+    UserModule,
   ],
   providers: [PostsService],
   controllers: [PostsController],

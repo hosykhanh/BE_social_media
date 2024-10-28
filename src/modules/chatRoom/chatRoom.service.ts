@@ -25,6 +25,7 @@ export class ChatRoomService {
     const existingChatRoom = await this.chatRoomModel
       .findOne({
         participants: { $all: [userId, otherUserId] },
+        $expr: { $eq: [{ $size: '$participants' }, 2] },
       })
       .exec();
 

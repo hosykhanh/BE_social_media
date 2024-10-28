@@ -1,9 +1,11 @@
 import mongoose, { Document } from 'mongoose';
 import { MessageSchema } from 'src/schema/message.schema';
+import { ChatRoom } from './chatRoom.model';
+import { User } from './user.model';
 
 export interface Message extends Document {
-  chatRoom: object;
-  sender: object;
+  chatRoom: ChatRoom;
+  sender: User;
   content: string;
   messageType: string;
   createdAt?: Date;

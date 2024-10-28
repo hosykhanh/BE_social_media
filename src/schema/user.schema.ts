@@ -10,7 +10,7 @@ const UserSchema = new mongoose.Schema(
     confirmPassword: { type: String, required: true },
     gender: { type: String, default: 'Other' },
     dateOfBirth: { type: Date, default: new Date('2000-01-01T00:00:00Z') },
-    phone: { type: Number },
+    phone: { type: Number, unique: true, sparse: true },
     address: { type: String },
     isAdmin: { type: Boolean, default: false },
     avatar: {

@@ -30,21 +30,27 @@ export class UserService {
       return date;
     }
 
-    const users: CreateUserDto[] = data.slice(3).map((row) => ({
-      maSo: row[0],
-      name: row[1],
-      dateOfBirth: moment(ExcelDateToJSDate(row[2])).toDate(),
-      gender: row[3],
-      address: row[4],
-      email: `${row[0]}@gmail.com`,
-      password: `${row[0]}abc`,
-      confirmPassword: `${row[0]}abc`,
-    }));
+    const users: CreateUserDto[] = data.slice(3).map((row) => {
+      const maSo = row[0];
+      const phone = row[5];
+      const identifier = maSo || phone;
+      return {
+        maSo: maSo,
+        name: row[1],
+        dateOfBirth: moment(ExcelDateToJSDate(row[2])).toDate(),
+        gender: row[3],
+        address: row[4],
+        phone: phone,
+        email: `${identifier}@gmail.com`,
+        password: `${identifier}abc`,
+        confirmPassword: `${identifier}abc`,
+      };
+    });
 
     const userIds: Types.ObjectId[] = [];
 
     for (const user of users) {
-      if (!user.maSo || !user.name) {
+      if (!user.name) {
         console.error(
           `Missing required fields for user: ${JSON.stringify(user)}`,
         );

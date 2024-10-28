@@ -12,6 +12,6 @@ import { ChatRoomModule } from '../chatRoom/chatRoom.module';
   ],
   providers: [UserService],
   controllers: [UserController],
-  exports: [MongooseModule],
+  exports: [MongooseModule, UserService],
 })
 export class UserModule {}
