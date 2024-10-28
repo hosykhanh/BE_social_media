@@ -237,6 +237,30 @@ export class UserService {
     return user;
   }
 
+  async removeFriend(userId: string, friendId: string): Promise<User | null> {
+    const userObjectId = new Types.ObjectId(userId);
+    const friendObjectId = new Types.ObjectId(friendId);
+
+    const [user] = await Promise.all([
+      this.userModel
+        .findByIdAndUpdate(
+          userId,
+          { $pull: { friends: friendObjectId } },
+          { new: true },
+        )
+        .exec(),
+      this.userModel
+        .findByIdAndUpdate(
+          friendId,
+          { $pull: { friends: userObjectId } },
+          { new: true },
+        )
+        .exec(),
+    ]);
+
+    return user;
+  }
+
   async addFriendRequest(
     fromUserId: string,
     toUserId: string,

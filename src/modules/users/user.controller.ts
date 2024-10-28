@@ -161,6 +161,14 @@ export class UserController {
     }
   }
 
+  @Delete(':id/friends')
+  async removeFriend(
+    @Param('id') id: string,
+    @Body('friendId') friendId: string,
+  ): Promise<User | null> {
+    return await this.userService.removeFriend(id, friendId);
+  }
+
   @Put(':id/friends/delete-request')
   async deleteSentFriendRequest(
     @Param('id') id: string,
