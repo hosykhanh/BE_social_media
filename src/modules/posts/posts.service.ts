@@ -93,14 +93,12 @@ export class PostsService {
   }
 
   async getPostsSortedByWeight(userId: string): Promise<Posts[]> {
-    // Lấy thông tin người dùng hiện tại để có danh sách bạn bè
     const currentUser = await this.userService.findById(userId);
     if (!currentUser) {
       throw new NotFoundException(`User with ID ${userId} not found`);
     }
     const friendsList = currentUser.friends.map((friend) => friend.toString());
 
-    // Lấy tất cả các bài viết
     const posts = await this.postsModel
       .find()
       .populate('user', '-password')
@@ -124,9 +122,9 @@ export class PostsService {
           (Date.now() - post.createdAt.getTime()) / (1000 * 60 * 60);
 
         // Hệ số cho công thức tính trọng số
-        const alpha = 1; // Trọng số cho lượt thích
-        const beta = 2; // Trọng số cho lượt bình luận
-        const delta = -0.1; // Trọng số cho thời gian
+        const alpha = 1;
+        const beta = 2;
+        const delta = -0.1;
 
         // Tính trọng số cơ bản
         let weight =

@@ -1,4 +1,4 @@
-import { Injectable, Logger } from '@nestjs/common';
+import { Injectable, Logger, NotFoundException } from '@nestjs/common';
 import { InjectModel } from '@nestjs/mongoose';
 import { Model, Types } from 'mongoose';
 import { CreateUserDto, UpdateUserDto } from 'src/dto/user.dto';
@@ -259,6 +259,89 @@ export class UserService {
     ]);
 
     return user;
+  }
+
+  async getFriendSuggestions(
+    userId: string,
+  ): Promise<{ user: User; mutualFriendsCount: number }[]> {
+    const currentUser = await this.userModel.findById(userId).exec();
+    if (!currentUser) {
+      throw new NotFoundException(`User with ID ${userId} not found`);
+    }
+
+    const friendsList = currentUser.friends.map((friend) => friend.toString());
+
+    const userChatRooms =
+      await this.chatRoomService.findChatRoomsByUserId(userId);
+
+    // Đếm số phòng chat chung cho mỗi người
+    const commonChatCounts: Record<string, number> = {};
+    for (const room of userChatRooms) {
+      room.participants.forEach((participantId) => {
+        const participantIdStr = participantId.toString();
+        if (
+          participantIdStr !== userId &&
+          !friendsList.includes(participantIdStr)
+        ) {
+          commonChatCounts[participantIdStr] =
+            (commonChatCounts[participantIdStr] || 0) + 1;
+        }
+      });
+    }
+
+    // Tập hợp những người có từ 2 phòng chat chung trở lên
+    const usersWithTwoOrMoreCommonChats = new Set<string>(
+      Object.keys(commonChatCounts).filter((id) => commonChatCounts[id] >= 2),
+    );
+
+    // Lọc những người không phải là bạn bè và tính số bạn chung lớn hơn 1
+    const allUsers = await this.userModel.find({ _id: { $ne: userId } }).exec();
+    const suggestions = await Promise.all(
+      allUsers
+        .filter(
+          (user) =>
+            !friendsList.includes(user._id.toString()) &&
+            user._id.toString() !== userId,
+        )
+        .map(async (user) => {
+          const mutualFriendsCount = user.friends.filter((friendId) =>
+            friendsList.includes(friendId.toString()),
+          ).length;
+
+          // Chỉ thêm vào danh sách gợi ý nếu số bạn chung lớn hơn 1
+          if (
+            mutualFriendsCount > 1 ||
+            usersWithTwoOrMoreCommonChats.has(user._id.toString())
+          ) {
+            return {
+              user,
+              mutualFriendsCount,
+              isInCommonChat: usersWithTwoOrMoreCommonChats.has(
+                user._id.toString(),
+              ),
+            };
+          }
+          return null;
+        }),
+    );
+
+    const validSuggestions = suggestions.filter(
+      (suggestion) => suggestion !== null,
+    );
+
+    // Sắp xếp danh sách gợi ý theo ưu tiên:
+    // - Ưu tiên người có từ 2 phòng chat chung với user
+    // - Nếu không, sắp xếp theo số bạn chung (mutualFriendsCount) giảm dần
+    validSuggestions.sort((a, b) => {
+      if (a.isInCommonChat && !b.isInCommonChat) return -1;
+      if (!a.isInCommonChat && b.isInCommonChat) return 1;
+      return b.mutualFriendsCount - a.mutualFriendsCount;
+    });
+
+    return validSuggestions.map(({ user, mutualFriendsCount }) => ({
+      user,
+      mutualFriendsCount,
+    }));
   }
 
   async addFriendRequest(

@@ -74,6 +74,20 @@ export class UserController {
     return this.userService.getSentFriendRequests(id);
   }
 
+  @Get('friend-suggestions/:userId')
+  async getFriendSuggestions(@Param('userId') userId: string): Promise<{
+    status: string;
+    message: string;
+    data: { user: User; mutualFriendsCount: number }[];
+  }> {
+    const suggestions = await this.userService.getFriendSuggestions(userId);
+    return {
+      status: 'OK',
+      message: 'Friend suggestions retrieved successfully',
+      data: suggestions,
+    };
+  }
+
   @Put(':id')
   async updateUser(
     @Param('id') id: string,
