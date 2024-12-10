@@ -24,10 +24,10 @@ export class CreateUserDto {
   readonly email?: string;
 
   @IsString()
-  readonly password?: string;
+  password?: string;
 
   @IsString()
-  readonly confirmPassword?: string;
+  confirmPassword?: string;
 
   @IsOptional()
   @IsString()

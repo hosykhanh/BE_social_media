@@ -9,16 +9,22 @@ import {
   UseInterceptors,
   UploadedFile,
   Query,
+  Headers,
+  UnauthorizedException,
 } from '@nestjs/common';
 import { UserService } from './user.service';
 import { User } from 'src/models/user.model';
 import { CreateUserDto, UpdateUserDto } from 'src/dto/user.dto';
 import { FileInterceptor } from '@nestjs/platform-express';
 import * as XLSX from 'xlsx';
+import { JwtAuthService } from '../login/jwt.service';
 
 @Controller('users')
 export class UserController {
-  constructor(private readonly userService: UserService) {}
+  constructor(
+    private readonly userService: UserService,
+    private readonly jwtAuthService: JwtAuthService,
+  ) {}
 
   @Post()
   async create(@Body() createUserDto: CreateUserDto) {
@@ -92,7 +98,21 @@ export class UserController {
   async updateUser(
     @Param('id') id: string,
     @Body() updateUserDto: UpdateUserDto,
+    @Headers('authorization') authHeader: string,
   ): Promise<{ status: string; message: string; data: User | null }> {
+    if (!authHeader) {
+      throw new UnauthorizedException('Token is required');
+    }
+
+    const token = authHeader.split(' ')[1];
+    const decoded = await this.jwtAuthService.decodeToken(token);
+
+    // Kiểm tra quyền: Admin hoặc đúng user
+    if (decoded.id !== id && !decoded.isAdmin) {
+      throw new UnauthorizedException(
+        'You do not have permission to update this user',
+      );
+    }
     const data = await this.userService.updateUser(id, updateUserDto);
     return {
       status: 'OK',

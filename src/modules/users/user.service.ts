@@ -6,6 +6,7 @@ import { User } from 'src/models/user.model';
 import { v2 as cloudinary } from 'cloudinary';
 import { createHash } from 'crypto';
 import * as moment from 'moment';
+import * as bcrypt from 'bcrypt';
 
 import { ChatRoomService } from '../chatRoom/chatRoom.service';
 
@@ -18,6 +19,16 @@ export class UserService {
   ) {}
 
   async create(createUserDto: CreateUserDto): Promise<User> {
+    // Tạo salt
+    const salt = await bcrypt.genSalt(10);
+
+    // Mã hóa password và confirmPassword
+    createUserDto.password = await bcrypt.hash(createUserDto.password, salt);
+    createUserDto.confirmPassword = await bcrypt.hash(
+      createUserDto.confirmPassword,
+      salt,
+    );
+
     const createdUser = new this.userModel(createUserDto);
     return createdUser.save();
   }
@@ -97,11 +108,19 @@ export class UserService {
   }
 
   async findAll(): Promise<User[]> {
-    return this.userModel.find().exec();
+    return this.userModel
+      .find()
+      .select('-password')
+      .select('-confirmPassword')
+      .exec();
   }
 
   async findById(id: string): Promise<User | null> {
-    return this.userModel.findById(id).exec();
+    return this.userModel
+      .findById(id)
+      .select('-password')
+      .select('-confirmPassword')
+      .exec();
   }
 
   async findByEmail(email: string): Promise<User | null> {
@@ -115,6 +134,7 @@ export class UserService {
         name: { $regex: search, $options: 'i' },
       })
       .select('-password')
+      .select('-confirmPassword')
       .exec();
 
     return users;
@@ -126,6 +146,8 @@ export class UserService {
   ): Promise<User | null> {
     const updatedUser = await this.userModel
       .findByIdAndUpdate(id, updateUserDto, { new: true })
+      .select('-password')
+      .select('-confirmPassword')
       .exec();
     if (updatedUser) {
       this.logger.log(`Updated user with ID ${id}: ${updatedUser}`);

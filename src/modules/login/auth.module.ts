@@ -24,5 +24,6 @@ import { ChatRoomModule } from '../chatRoom/chatRoom.module';
   ],
   providers: [JwtAuthService, UserService],
   controllers: [AuthController],
+  exports: [JwtAuthService],
 })
 export class AuthModule {}
