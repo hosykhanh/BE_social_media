@@ -7,6 +7,7 @@ import { UserSchema } from 'src/schema/user.schema';
 import { LikeModule } from '../like/like.module';
 import { CommentModule } from '../comment/comment.module';
 import { UserModule } from '../users/user.module';
+import { AuthModule } from '../login/auth.module';
 
 @Module({
   imports: [
@@ -15,6 +16,7 @@ import { UserModule } from '../users/user.module';
     LikeModule,
     CommentModule,
     UserModule,
+    AuthModule,
   ],
   providers: [PostsService],
   controllers: [PostsController],

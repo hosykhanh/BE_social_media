@@ -49,9 +49,24 @@ export class JwtAuthService {
     }
   }
 
-  async decodeToken(token: string): Promise<any> {
+  async checkRole(
+    authHeader: string,
+    role: 'admin' | 'user',
+    id?: string, // Tham số id tùy chọn
+  ): Promise<boolean> {
+    if (!authHeader) {
+      throw new UnauthorizedException('Authorization header is required');
+    }
+
+    const token = authHeader.split(' ')[1]; // Lấy token từ header
+    if (!token) {
+      throw new UnauthorizedException('Token is required');
+    }
+
+    let decoded;
     try {
-      return this.jwtService.verify(token, {
+      // Giải mã token
+      decoded = this.jwtService.verify(token, {
         secret: this.configService.get<string>('ACCESS_TOKEN_SECRET'),
       });
     } catch (err) {
@@ -60,27 +75,21 @@ export class JwtAuthService {
       }
       throw new UnauthorizedException('Invalid token');
     }
-  }
 
-  async checkRole(token: string, role: 'admin' | 'user'): Promise<boolean> {
-    try {
-      const decoded = this.jwtService.verify(token, {
-        secret: this.configService.get<string>('ACCESS_TOKEN_SECRET'),
-      });
-
-      // Kiểm tra quyền
-      if (role === 'admin' && decoded.isAdmin) {
-        return true;
-      } else if (role === 'user' && !decoded.isAdmin) {
-        return true;
-      }
-
-      throw new UnauthorizedException('Insufficient permissions');
-    } catch (err) {
-      if (err.name === 'TokenExpiredError') {
-        throw new UnauthorizedException('Token has expired');
-      }
-      throw new UnauthorizedException('Invalid token');
+    // Nếu có tham số id, kiểm tra quyền dựa trên id
+    if (id && decoded.id !== id && !decoded.isAdmin) {
+      throw new UnauthorizedException(
+        'You do not have permission to perform this action',
+      );
     }
+
+    // Kiểm tra quyền dựa trên role
+    if (role === 'admin' && decoded.isAdmin) {
+      return true;
+    } else if (role === 'user') {
+      return true;
+    }
+
+    throw new UnauthorizedException('Insufficient permissions');
   }
 }

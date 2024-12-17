@@ -6,17 +6,26 @@ import {
   Param,
   Put,
   Delete,
+  Headers,
 } from '@nestjs/common';
 import { LikeService } from './like.service';
 import { CreateLikeDto, UpdateLikeDto } from 'src/dto/like.dto';
 import { Like } from 'src/models/like.model';
+import { JwtAuthService } from '../login/jwt.service';
 
 @Controller('like')
 export class LikeController {
-  constructor(private readonly likeService: LikeService) {}
+  constructor(
+    private readonly likeService: LikeService,
+    private readonly jwtAuthService: JwtAuthService,
+  ) {}
 
   @Post()
-  async createLike(@Body() createLikeDto: CreateLikeDto) {
+  async createLike(
+    @Body() createLikeDto: CreateLikeDto,
+    @Headers('authorization') authHeader: string,
+  ) {
+    await this.jwtAuthService.checkRole(authHeader, 'user');
     return this.likeService.createLike(createLikeDto);
   }
 
@@ -32,7 +41,9 @@ export class LikeController {
   async updateLike(
     @Param('id') id: string,
     @Body() updateLikeDto: UpdateLikeDto,
+    @Headers('authorization') authHeader: string,
   ): Promise<{ status: string; message: string; data: Like | null }> {
+    await this.jwtAuthService.checkRole(authHeader, 'user');
     const data = await this.likeService.updateLike(id, updateLikeDto);
     return {
       status: 'OK',
@@ -47,7 +58,11 @@ export class LikeController {
   }
 
   @Delete(':id')
-  async deleteLike(@Param('id') id: string): Promise<Like | null> {
+  async deleteLike(
+    @Param('id') id: string,
+    @Headers('authorization') authHeader: string,
+  ): Promise<Like | null> {
+    await this.jwtAuthService.checkRole(authHeader, 'user');
     return this.likeService.deleteLike(id);
   }
 }

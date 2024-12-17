@@ -223,11 +223,14 @@ export class UserService {
       }
 
       // Cập nhật đường dẫn avatar vào cơ sở dữ liệu
-      const updatedUser = await this.userModel.findByIdAndUpdate(
-        id,
-        { avatar: avatarUrl },
-        { new: true }, // Trả về dữ liệu sau khi đã cập nhật
-      );
+      const updatedUser = await this.userModel
+        .findByIdAndUpdate(
+          id,
+          { avatar: avatarUrl },
+          { new: true }, // Trả về dữ liệu sau khi đã cập nhật
+        )
+        .select('-password')
+        .select('-confirmPassword');
 
       if (updatedUser) {
         this.logger.log(`Updated avatar for user with ID ${id}`);
@@ -255,6 +258,8 @@ export class UserService {
         },
         { new: true },
       )
+      .select('-password')
+      .select('-confirmPassword')
       .exec();
     return user;
   }
@@ -270,6 +275,8 @@ export class UserService {
           { $pull: { friends: friendObjectId } },
           { new: true },
         )
+        .select('-password')
+        .select('-confirmPassword')
         .exec(),
       this.userModel
         .findByIdAndUpdate(
@@ -277,6 +284,8 @@ export class UserService {
           { $pull: { friends: userObjectId } },
           { new: true },
         )
+        .select('-password')
+        .select('-confirmPassword')
         .exec(),
     ]);
 
@@ -404,6 +413,8 @@ export class UserService {
           },
           { new: true },
         )
+        .select('-password')
+        .select('-confirmPassword')
         .exec();
 
       if (!user) {
@@ -416,6 +427,8 @@ export class UserService {
         .findByIdAndUpdate(friendId, {
           $push: { friends: new Types.ObjectId(userId) },
         })
+        .select('-password')
+        .select('-confirmPassword')
         .exec();
 
       return user;
@@ -439,6 +452,8 @@ export class UserService {
           },
           { new: true },
         )
+        .select('-password')
+        .select('-confirmPassword')
         .exec();
 
       if (!user) {
@@ -457,6 +472,7 @@ export class UserService {
     const user = await this.userModel
       .find({ 'friendRequests.from': userId })
       .select('-password')
+      .select('-confirmPassword')
       .exec();
 
     return user;
@@ -476,6 +492,8 @@ export class UserService {
           },
           { new: true },
         )
+        .select('-password')
+        .select('-confirmPassword')
         .exec();
 
       if (!user) {

@@ -5,12 +5,14 @@ import { LikeController } from './like.controller';
 import { LikeSchema } from 'src/schema/like.schema';
 import { UserSchema } from 'src/schema/user.schema';
 import { PostsSchema } from 'src/schema/posts.schema';
+import { AuthModule } from '../login/auth.module';
 
 @Module({
   imports: [
     MongooseModule.forFeature([{ name: 'Like', schema: LikeSchema }]),
     MongooseModule.forFeature([{ name: 'Posts', schema: PostsSchema }]),
     MongooseModule.forFeature([{ name: 'User', schema: UserSchema }]),
+    AuthModule,
   ],
   providers: [LikeService],
   controllers: [LikeController],

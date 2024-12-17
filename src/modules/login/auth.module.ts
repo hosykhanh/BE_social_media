@@ -1,4 +1,4 @@
-import { Module } from '@nestjs/common';
+import { forwardRef, Module } from '@nestjs/common';
 import { JwtModule } from '@nestjs/jwt';
 import { ConfigModule, ConfigService } from '@nestjs/config';
 import { JwtAuthService } from './jwt.service';
@@ -11,7 +11,7 @@ import { ChatRoomModule } from '../chatRoom/chatRoom.module';
 @Module({
   imports: [
     ConfigModule, // Ensure ConfigModule is imported
-    ChatRoomModule,
+    forwardRef(() => ChatRoomModule),
     JwtModule.registerAsync({
       imports: [ConfigModule], // Import ConfigModule here as well
       inject: [ConfigService],

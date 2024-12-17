@@ -78,17 +78,24 @@ export class PostsService {
   }
 
   async getAllPosts(): Promise<Posts[]> {
-    return this.postsModel.find().populate('user', '-password').exec();
+    return this.postsModel
+      .find()
+      .populate('user', '-password -confirmPassword')
+      .sort({ createdAt: -1 })
+      .exec();
   }
 
   async getPostsById(id: string): Promise<Posts> {
-    return this.postsModel.findById(id).populate('user', '-password').exec();
+    return this.postsModel
+      .findById(id)
+      .populate('user', '-password -confirmPassword')
+      .exec();
   }
 
   async getPostsByUserId(userId: string): Promise<Posts[]> {
     return this.postsModel
       .find({ user: userId })
-      .populate('user', '-password')
+      .populate('user', '-password -confirmPassword')
       .exec();
   }
 
@@ -101,7 +108,7 @@ export class PostsService {
 
     const posts = await this.postsModel
       .find()
-      .populate('user', '-password')
+      .populate('user', '-password -confirmPassword')
       .exec();
 
     // Tính trọng số động cho mỗi bài viết

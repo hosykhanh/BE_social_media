@@ -10,7 +10,6 @@ import {
   UploadedFile,
   Query,
   Headers,
-  UnauthorizedException,
 } from '@nestjs/common';
 import { UserService } from './user.service';
 import { User } from 'src/models/user.model';
@@ -33,7 +32,11 @@ export class UserController {
 
   @Post('upload-file-excel')
   @UseInterceptors(FileInterceptor('file'))
-  async uploadFile(@UploadedFile() file: Express.Multer.File) {
+  async uploadFile(
+    @UploadedFile() file: Express.Multer.File,
+    @Headers('authorization') authHeader: string,
+  ) {
+    await this.jwtAuthService.checkRole(authHeader, 'admin');
     try {
       const workbook = XLSX.read(file.buffer, { type: 'buffer' });
       const worksheet = workbook.Sheets[workbook.SheetNames[0]];
@@ -58,7 +61,11 @@ export class UserController {
   }
 
   @Get(':id')
-  async findById(@Param('id') id: string): Promise<User | null> {
+  async findById(
+    @Param('id') id: string,
+    @Headers('authorization') authHeader: string,
+  ): Promise<User | null> {
+    await this.jwtAuthService.checkRole(authHeader, 'user');
     return this.userService.findById(id);
   }
 
@@ -71,21 +78,31 @@ export class UserController {
   async searchUsers(
     @Param('id') id: string,
     @Query('search') search: string,
+    @Headers('authorization') authHeader: string,
   ): Promise<User[]> {
+    await this.jwtAuthService.checkRole(authHeader, 'user');
     return this.userService.searchUsers(id, search);
   }
 
   @Get(':id/sent-requests')
-  async getSentRequests(@Param('id') id: string): Promise<User[]> {
+  async getSentRequests(
+    @Param('id') id: string,
+    @Headers('authorization') authHeader: string,
+  ): Promise<User[]> {
+    await this.jwtAuthService.checkRole(authHeader, 'user');
     return this.userService.getSentFriendRequests(id);
   }
 
   @Get('friend-suggestions/:userId')
-  async getFriendSuggestions(@Param('userId') userId: string): Promise<{
+  async getFriendSuggestions(
+    @Param('userId') userId: string,
+    @Headers('authorization') authHeader: string,
+  ): Promise<{
     status: string;
     message: string;
     data: { user: User; mutualFriendsCount: number }[];
   }> {
+    await this.jwtAuthService.checkRole(authHeader, 'user', userId);
     const suggestions = await this.userService.getFriendSuggestions(userId);
     return {
       status: 'OK',
@@ -100,19 +117,7 @@ export class UserController {
     @Body() updateUserDto: UpdateUserDto,
     @Headers('authorization') authHeader: string,
   ): Promise<{ status: string; message: string; data: User | null }> {
-    if (!authHeader) {
-      throw new UnauthorizedException('Token is required');
-    }
-
-    const token = authHeader.split(' ')[1];
-    const decoded = await this.jwtAuthService.decodeToken(token);
-
-    // Kiểm tra quyền: Admin hoặc đúng user
-    if (decoded.id !== id && !decoded.isAdmin) {
-      throw new UnauthorizedException(
-        'You do not have permission to update this user',
-      );
-    }
+    await this.jwtAuthService.checkRole(authHeader, 'user', id);
     const data = await this.userService.updateUser(id, updateUserDto);
     return {
       status: 'OK',
@@ -125,7 +130,9 @@ export class UserController {
   async addFriend(
     @Param('id') id: string,
     @Body('friendId') friendId: string,
+    @Headers('authorization') authHeader: string,
   ): Promise<User | null> {
+    await this.jwtAuthService.checkRole(authHeader, 'user');
     return await this.userService.addFriend(id, friendId);
   }
 
@@ -133,7 +140,9 @@ export class UserController {
   async addFriendRequest(
     @Param('id') id: string,
     @Body('friendId') friendId: string,
+    @Headers('authorization') authHeader: string,
   ): Promise<User | null> {
+    await this.jwtAuthService.checkRole(authHeader, 'user');
     return await this.userService.addFriendRequest(id, friendId);
   }
 
@@ -141,7 +150,9 @@ export class UserController {
   async acceptFriendRequest(
     @Param('id') id: string,
     @Body('friendId') friendId: string,
+    @Headers('authorization') authHeader: string,
   ): Promise<User | null> {
+    await this.jwtAuthService.checkRole(authHeader, 'user', id);
     return await this.userService.acceptFriendRequest(id, friendId);
   }
 
@@ -149,7 +160,9 @@ export class UserController {
   async rejectFriendRequest(
     @Param('id') id: string,
     @Body('friendId') friendId: string,
+    @Headers('authorization') authHeader: string,
   ): Promise<User | null> {
+    await this.jwtAuthService.checkRole(authHeader, 'user', id);
     return await this.userService.rejectFriendRequest(id, friendId);
   }
 
@@ -158,14 +171,18 @@ export class UserController {
   async updateAvatar(
     @Param('id') id: string,
     @UploadedFile() file: Express.Multer.File,
+    @Headers('authorization') authHeader: string,
   ): Promise<User | null> {
+    await this.jwtAuthService.checkRole(authHeader, 'user', id);
     return await this.userService.updateAvatar(id, file);
   }
 
   @Delete('delete-many')
   async deleteManyUser(
     @Body('ids') ids: string[],
+    @Headers('authorization') authHeader: string,
   ): Promise<{ status: string; message: string; deletedCount: number }> {
+    await this.jwtAuthService.checkRole(authHeader, 'admin');
     const result = await this.userService.deleteManyUser(ids);
     const deletedCount = result.deletedCount;
     return {
@@ -178,7 +195,9 @@ export class UserController {
   @Delete(':id')
   async deleteUser(
     @Param('id') id: string,
+    @Headers('authorization') authHeader: string,
   ): Promise<{ status: string; message: string; data: User | null }> {
+    await this.jwtAuthService.checkRole(authHeader, 'admin');
     const data = await this.userService.deleteUser(id);
     if (data) {
       return {
@@ -199,7 +218,9 @@ export class UserController {
   async removeFriend(
     @Param('id') id: string,
     @Body('friendId') friendId: string,
+    @Headers('authorization') authHeader: string,
   ): Promise<User | null> {
+    await this.jwtAuthService.checkRole(authHeader, 'user', id);
     return await this.userService.removeFriend(id, friendId);
   }
 
@@ -207,7 +228,9 @@ export class UserController {
   async deleteSentFriendRequest(
     @Param('id') id: string,
     @Body('friendId') friendId: string,
+    @Headers('authorization') authHeader: string,
   ): Promise<User | null> {
+    await this.jwtAuthService.checkRole(authHeader, 'user', id);
     return await this.userService.deleteSentFriendRequest(id, friendId);
   }
 }

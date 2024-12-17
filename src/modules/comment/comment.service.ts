@@ -38,13 +38,16 @@ export class CommentService {
     const postData = { ...createCommentDto, image: imageUrl };
     const createdComment = new this.commentModel(postData);
     const savedComment = await createdComment.save();
-    return this.commentModel.findById(savedComment._id).populate('user').exec();
+    return this.commentModel
+      .findById(savedComment._id)
+      .populate('user', '-password -confirmPassword')
+      .exec();
   }
 
   async getAllComment(): Promise<Comment[]> {
     return this.commentModel
       .find()
-      .populate('user', '-password')
+      .populate('user', '-password -confirmPassword')
       .populate('posts')
       .exec();
   }
@@ -52,7 +55,7 @@ export class CommentService {
   async getCommentById(id: string): Promise<Comment> {
     return this.commentModel
       .findById(id)
-      .populate('user')
+      .populate('user', '-password -confirmPassword')
       .populate('posts')
       .exec();
   }
@@ -60,7 +63,7 @@ export class CommentService {
   async getCommentsByPostId(postId: string): Promise<Comment[]> {
     return this.commentModel
       .find({ posts: postId })
-      .populate('user', '-password')
+      .populate('user', '-password -confirmPassword')
       .exec();
   }
 

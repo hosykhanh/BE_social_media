@@ -54,7 +54,10 @@ export class ChatRoomService {
   }
 
   async findById(id: string): Promise<ChatRoom> {
-    return this.chatRoomModel.findById(id).populate('participants').exec();
+    return this.chatRoomModel
+      .findById(id)
+      .populate('participants', '-password -confirmPassword')
+      .exec();
   }
 
   async findChatRoomsByUserId(userId: string): Promise<ChatRoom[]> {

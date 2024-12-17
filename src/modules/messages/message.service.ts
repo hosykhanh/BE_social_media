@@ -3,14 +3,12 @@ import { InjectModel } from '@nestjs/mongoose';
 import { Model } from 'mongoose';
 import { CreateMessageDto } from 'src/dto/message.dto';
 import { Message } from 'src/models/message.model';
-import { ChatGateway } from '../chatSocket/chat.gateway';
 
 @Injectable()
 export class MessageService {
   private readonly logger = new Logger(MessageService.name);
   constructor(
     @InjectModel('Message') private readonly messageModel: Model<Message>,
-    private readonly chatGateway: ChatGateway, // Inject ChatGateway to emit events
   ) {}
 
   async createMessage(createMessageDto: CreateMessageDto): Promise<Message> {
@@ -21,7 +19,7 @@ export class MessageService {
     const populatedMessage = await this.messageModel
       .findById(createdMessage._id)
       .populate('chatRoom')
-      .populate('sender')
+      .populate('sender', '-password -confirmPassword')
       .exec();
 
     return populatedMessage;
@@ -30,7 +28,15 @@ export class MessageService {
   async findAllMessages(chatRoomId: string): Promise<Message[]> {
     return this.messageModel
       .find({ chatRoom: chatRoomId })
-      .populate('sender')
+      .populate('sender', '-password -confirmPassword')
+      .exec();
+  }
+
+  async getMessageById(id: string): Promise<Message> {
+    return this.messageModel
+      .findById(id)
+      .populate('chatRoom')
+      .populate('sender', '-password -confirmPassword')
       .exec();
   }
 
