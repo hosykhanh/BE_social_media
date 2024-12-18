@@ -29,6 +29,7 @@ const UserSchema = new mongoose.Schema(
         },
       },
     ],
+    otpSecret: { type: String, default: null },
   },
   {
     timestamps: true,

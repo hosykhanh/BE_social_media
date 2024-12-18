@@ -112,6 +112,7 @@ export class UserService {
       .find()
       .select('-password')
       .select('-confirmPassword')
+      .select('-otpSecret')
       .exec();
   }
 
@@ -120,7 +121,12 @@ export class UserService {
       .findById(id)
       .select('-password')
       .select('-confirmPassword')
+      .select('-otpSecret')
       .exec();
+  }
+
+  async otpFindById(id: string): Promise<User | null> {
+    return this.userModel.findById(id).exec();
   }
 
   async findByEmail(email: string): Promise<User | null> {
@@ -135,6 +141,7 @@ export class UserService {
       })
       .select('-password')
       .select('-confirmPassword')
+      .select('-otpSecret')
       .exec();
 
     return users;
@@ -148,6 +155,7 @@ export class UserService {
       .findByIdAndUpdate(id, updateUserDto, { new: true })
       .select('-password')
       .select('-confirmPassword')
+      .select('-otpSecret')
       .exec();
     if (updatedUser) {
       this.logger.log(`Updated user with ID ${id}: ${updatedUser}`);
@@ -230,7 +238,8 @@ export class UserService {
           { new: true }, // Trả về dữ liệu sau khi đã cập nhật
         )
         .select('-password')
-        .select('-confirmPassword');
+        .select('-confirmPassword')
+        .select('-otpSecret');
 
       if (updatedUser) {
         this.logger.log(`Updated avatar for user with ID ${id}`);
@@ -260,6 +269,7 @@ export class UserService {
       )
       .select('-password')
       .select('-confirmPassword')
+      .select('-otpSecret')
       .exec();
     return user;
   }
@@ -277,6 +287,7 @@ export class UserService {
         )
         .select('-password')
         .select('-confirmPassword')
+        .select('-otpSecret')
         .exec(),
       this.userModel
         .findByIdAndUpdate(
@@ -286,6 +297,7 @@ export class UserService {
         )
         .select('-password')
         .select('-confirmPassword')
+        .select('-otpSecret')
         .exec(),
     ]);
 
@@ -415,6 +427,7 @@ export class UserService {
         )
         .select('-password')
         .select('-confirmPassword')
+        .select('-otpSecret')
         .exec();
 
       if (!user) {
@@ -429,6 +442,7 @@ export class UserService {
         })
         .select('-password')
         .select('-confirmPassword')
+        .select('-otpSecret')
         .exec();
 
       return user;
@@ -454,6 +468,7 @@ export class UserService {
         )
         .select('-password')
         .select('-confirmPassword')
+        .select('-otpSecret')
         .exec();
 
       if (!user) {
@@ -473,6 +488,7 @@ export class UserService {
       .find({ 'friendRequests.from': userId })
       .select('-password')
       .select('-confirmPassword')
+      .select('-otpSecret')
       .exec();
 
     return user;
@@ -494,6 +510,7 @@ export class UserService {
         )
         .select('-password')
         .select('-confirmPassword')
+        .select('-otpSecret')
         .exec();
 
       if (!user) {

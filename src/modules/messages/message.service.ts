@@ -19,7 +19,7 @@ export class MessageService {
     const populatedMessage = await this.messageModel
       .findById(createdMessage._id)
       .populate('chatRoom')
-      .populate('sender', '-password -confirmPassword')
+      .populate('sender', '-password -confirmPassword -otpSecret')
       .exec();
 
     return populatedMessage;
@@ -28,7 +28,7 @@ export class MessageService {
   async findAllMessages(chatRoomId: string): Promise<Message[]> {
     return this.messageModel
       .find({ chatRoom: chatRoomId })
-      .populate('sender', '-password -confirmPassword')
+      .populate('sender', '-password -confirmPassword -otpSecret')
       .exec();
   }
 
@@ -36,7 +36,7 @@ export class MessageService {
     return this.messageModel
       .findById(id)
       .populate('chatRoom')
-      .populate('sender', '-password -confirmPassword')
+      .populate('sender', '-password -confirmPassword -otpSecret')
       .exec();
   }
 

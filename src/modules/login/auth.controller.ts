@@ -1,48 +1,31 @@
-import { Controller, Post, Body, HttpStatus, Res } from '@nestjs/common';
+import {
+  Controller,
+  Post,
+  Body,
+  HttpStatus,
+  Res,
+  Param,
+  Headers,
+} from '@nestjs/common';
 import { Response } from 'express';
+import { AuthService } from './auth.service';
 import { JwtAuthService } from './jwt.service';
-import { UserService } from '../users/user.service';
 
 @Controller('auth')
 export class AuthController {
   constructor(
+    private readonly authService: AuthService,
     private readonly jwtAuthService: JwtAuthService,
-    private readonly userService: UserService,
   ) {}
 
   @Post('login')
   async login(@Body() loginDto: { email: string; password: string }) {
-    const user = await this.userService.findByEmail(loginDto.email);
-
-    if (!user) {
-      return { status: 'err', message: 'The user does not exist' };
-    }
-
-    if (loginDto.password !== user.password) {
-      return { status: 'err', message: 'Email or password is incorrect' };
-    }
-
-    const access_token = await this.jwtAuthService.generateAccessToken({
-      id: user._id,
-      isAdmin: user.isAdmin,
-    });
-
-    const refresh_token = await this.jwtAuthService.generateRefreshToken({
-      id: user._id,
-      isAdmin: user.isAdmin,
-    });
-
-    return {
-      status: 'OK',
-      message: 'Login successful',
-      access_token,
-      refresh_token,
-    };
+    return this.authService.login(loginDto);
   }
 
   @Post('refresh')
-  async refresh(@Body('token') token: string) {
-    return await this.jwtAuthService.refreshToken(token);
+  async refresh(@Headers('authorization') authHeader: string) {
+    return await this.jwtAuthService.refreshToken(authHeader);
   }
 
   @Post('logout')
@@ -62,5 +45,26 @@ export class AuthController {
         message: 'Internal server error',
       });
     }
+  }
+
+  @Post('verify-otp/:userId')
+  async verifyOTP(
+    @Param('userId') userId: string,
+    @Body('otp') otp: string,
+    @Headers('authorization') authHeader: string,
+  ): Promise<{ status: string; message: string; access_token: string }> {
+    await this.jwtAuthService.checkRole(authHeader, 'user');
+    const isValid = await this.authService.verifyOTP(userId, otp);
+
+    if (!isValid) {
+      return { status: 'err', message: 'Invalid OTP', access_token: null };
+    }
+    const res = await this.jwtAuthService.refreshToken(authHeader);
+
+    return {
+      status: 'OK',
+      message: 'OTP verified successfully',
+      access_token: res.access_token,
+    };
   }
 }

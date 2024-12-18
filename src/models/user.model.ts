@@ -19,6 +19,7 @@ export interface User extends Document {
     from: Types.ObjectId;
     status: string;
   }[];
+  otpSecret: string;
 }
 
 export const UserModel = mongoose.model<User>('User', UserSchema);

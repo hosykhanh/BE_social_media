@@ -63,6 +63,10 @@ export class CreateUserDto {
     from: Types.ObjectId;
     status: string;
   }[];
+
+  @IsOptional()
+  @IsString()
+  readonly otpSecret?: string;
 }
 
 export class UpdateUserDto {
@@ -124,4 +128,8 @@ export class UpdateUserDto {
     from: Types.ObjectId;
     status: string;
   }[];
+
+  @IsOptional()
+  @IsString()
+  readonly otpSecret?: string;
 }

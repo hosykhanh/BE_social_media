@@ -25,10 +25,14 @@ export class JwtAuthService {
     });
   }
 
-  async refreshToken(token: string): Promise<any> {
+  async refreshToken(authHeader: string): Promise<any> {
+    const token = authHeader.split(' ')[1];
+    if (!token) {
+      throw new UnauthorizedException('Token is required');
+    }
     try {
       const decoded = this.jwtService.verify(token, {
-        secret: this.configService.get<string>('REFRESH_TOKEN_SECRET'),
+        secret: this.configService.get<string>('ACCESS_TOKEN_SECRET'),
       });
 
       const accessToken = await this.generateAccessToken({
