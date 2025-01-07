@@ -67,4 +67,13 @@ export class AuthController {
       access_token: res.access_token,
     };
   }
+
+  @Post('resend-qrcode/:userId')
+  async resendQRCode(
+    @Param('userId') userId: string,
+    @Headers('authorization') authHeader: string,
+  ) {
+    await this.jwtAuthService.checkRole(authHeader, 'user');
+    return await this.authService.resendQRCode(userId);
+  }
 }

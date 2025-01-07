@@ -3,6 +3,7 @@ import { UserService } from '../users/user.service';
 import { OTPAuthService } from './otp.service';
 import { JwtAuthService } from './jwt.service';
 import { authenticator } from 'otplib';
+import * as bcrypt from 'bcrypt';
 
 @Injectable()
 export class AuthService {
@@ -20,6 +21,16 @@ export class AuthService {
     }
 
     if (loginDto.password !== user.password) {
+      return { status: 'err', message: 'Email or password is incorrect' };
+    }
+
+    // So sánh mật khẩu nhập vào với mật khẩu đã mã hóa
+    const isPasswordValid = await bcrypt.compare(
+      loginDto.password,
+      user.password,
+    );
+
+    if (!isPasswordValid) {
       return { status: 'err', message: 'Email or password is incorrect' };
     }
 
@@ -72,5 +83,24 @@ export class AuthService {
     });
 
     return isValid;
+  }
+
+  async resendQRCode(userId: string) {
+    const user = await this.userService.otpFindById(userId);
+
+    if (!user) {
+      throw new Error('User not found');
+    }
+    if (!user.otpSecret) {
+      throw new Error(
+        'User does not have an OTP secret. Please log in to generate one.',
+      );
+    }
+
+    const qrCode = await this.otpAuthService.generateQRCode(
+      user.otpSecret,
+      user.email,
+    );
+    return { status: 'OK', message: 'Resend QRCode successful', qrCode };
   }
 }

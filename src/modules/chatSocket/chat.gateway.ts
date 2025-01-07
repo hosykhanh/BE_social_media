@@ -9,7 +9,7 @@ import {
 import { Server, Socket } from 'socket.io';
 
 @WebSocketGateway(8800, {
-  cors: { origin: 'http://localhost:3000' },
+  cors: { origin: 'https://localhost:3000' },
   credentials: true,
 })
 export class ChatGateway
