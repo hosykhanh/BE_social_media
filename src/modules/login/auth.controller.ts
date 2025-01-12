@@ -53,7 +53,7 @@ export class AuthController {
     @Body('otp') otp: string,
     @Headers('authorization') authHeader: string,
   ): Promise<{ status: string; message: string; access_token: string }> {
-    await this.jwtAuthService.checkRole(authHeader, 'user');
+    await this.jwtAuthService.checkRoleOTP(authHeader, 'user');
     const isValid = await this.authService.verifyOTP(userId, otp);
 
     if (!isValid) {
@@ -73,7 +73,7 @@ export class AuthController {
     @Param('userId') userId: string,
     @Headers('authorization') authHeader: string,
   ) {
-    await this.jwtAuthService.checkRole(authHeader, 'user');
+    await this.jwtAuthService.checkRoleOTP(authHeader, 'user');
     return await this.authService.resendQRCode(userId);
   }
 }

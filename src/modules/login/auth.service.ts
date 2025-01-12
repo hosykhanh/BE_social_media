@@ -20,10 +20,6 @@ export class AuthService {
       return { status: 'err', message: 'The user does not exist' };
     }
 
-    if (loginDto.password !== user.password) {
-      return { status: 'err', message: 'Email or password is incorrect' };
-    }
-
     // So sánh mật khẩu nhập vào với mật khẩu đã mã hóa
     const isPasswordValid = await bcrypt.compare(
       loginDto.password,
@@ -38,6 +34,7 @@ export class AuthService {
     const access_token = await this.jwtAuthService.generateAccessToken({
       id: user._id,
       isAdmin: user.isAdmin,
+      otpExpires: 0,
     });
 
     const refresh_token = await this.jwtAuthService.generateRefreshToken({

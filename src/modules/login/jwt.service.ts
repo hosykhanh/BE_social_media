@@ -32,12 +32,13 @@ export class JwtAuthService {
     }
     try {
       const decoded = this.jwtService.verify(token, {
-        secret: this.configService.get<string>('ACCESS_TOKEN_SECRET'),
+        secret: this.configService.get<string>('REFRESH_TOKEN_SECRET'),
       });
 
       const accessToken = await this.generateAccessToken({
         id: decoded.id,
         isAdmin: decoded.isAdmin,
+        otpExpires: this.configService.get<string>('OTP_EXPIRES_IN'),
       });
 
       return {
@@ -51,6 +52,55 @@ export class JwtAuthService {
         message: 'Authentication failed',
       };
     }
+  }
+
+  async checkOtpExpire(
+    otpExpires: number,
+    iat: number,
+  ): Promise<{ isValid: boolean; message: string }> {
+    const currentTime = Date.now();
+    const otpExpiresAt = iat * 1000 + otpExpires * 1000;
+
+    if (currentTime <= otpExpiresAt) {
+      return { isValid: true, message: 'OTP is still valid.' };
+    } else {
+      return { isValid: false, message: 'OTP has expired.' };
+    }
+  }
+
+  async checkRoleOTP(
+    authHeader: string,
+    role: 'admin' | 'user',
+  ): Promise<boolean> {
+    if (!authHeader) {
+      throw new UnauthorizedException('Authorization header is required');
+    }
+
+    const token = authHeader.split(' ')[1];
+    if (!token) {
+      throw new UnauthorizedException('Token is required');
+    }
+
+    let decoded;
+    try {
+      decoded = this.jwtService.verify(token, {
+        secret: this.configService.get<string>('ACCESS_TOKEN_SECRET'),
+      });
+    } catch (err) {
+      if (err.name === 'TokenExpiredError') {
+        throw new UnauthorizedException('Token has expired');
+      }
+      throw new UnauthorizedException('Invalid token');
+    }
+
+    // Kiểm tra quyền dựa trên role
+    if (role === 'admin' && decoded.isAdmin) {
+      return true;
+    } else if (role === 'user') {
+      return true;
+    }
+
+    throw new UnauthorizedException('Insufficient permissions');
   }
 
   async checkRole(
@@ -79,6 +129,8 @@ export class JwtAuthService {
       }
       throw new UnauthorizedException('Invalid token');
     }
+
+    await this.checkOtpExpire(decoded.otpExpires, decoded.iat);
 
     // Nếu có tham số id, kiểm tra quyền dựa trên id
     if (id && decoded.id !== id && !decoded.isAdmin) {
