@@ -130,7 +130,14 @@ export class JwtAuthService {
       throw new UnauthorizedException('Invalid token');
     }
 
-    await this.checkOtpExpire(decoded.otpExpires, decoded.iat);
+    const { isValid, message } = await this.checkOtpExpire(
+      decoded.otpExpires,
+      decoded.iat,
+    );
+
+    if (!isValid) {
+      throw new UnauthorizedException(message);
+    }
 
     // Nếu có tham số id, kiểm tra quyền dựa trên id
     if (id && decoded.id !== id && !decoded.isAdmin) {

@@ -3,6 +3,7 @@ import { UserService } from '../users/user.service';
 import { OTPAuthService } from './otp.service';
 import { JwtAuthService } from './jwt.service';
 import { authenticator } from 'otplib';
+import { ConfigService } from '@nestjs/config';
 import * as bcrypt from 'bcrypt';
 
 @Injectable()
@@ -11,6 +12,7 @@ export class AuthService {
     private readonly jwtAuthService: JwtAuthService,
     private readonly userService: UserService,
     private readonly otpAuthService: OTPAuthService,
+    private readonly configService: ConfigService,
   ) {}
 
   async login(loginDto: { email: string; password: string }) {
@@ -65,7 +67,7 @@ export class AuthService {
     };
   }
 
-  async verifyOTP(userId: string, otp: string): Promise<boolean> {
+  async verifyOTP(userId: string, otp: string) {
     // Lấy thông tin user từ database
     const user = await this.userService.otpFindById(userId);
 
@@ -79,7 +81,21 @@ export class AuthService {
       secret: user.otpSecret,
     });
 
-    return isValid;
+    if (!isValid) {
+      return { status: 'err', message: 'Invalid OTP', access_token: null };
+    }
+
+    const accessToken = await this.jwtAuthService.generateAccessToken({
+      id: user.id,
+      isAdmin: user.isAdmin,
+      otpExpires: this.configService.get<string>('OTP_EXPIRES_IN'),
+    });
+
+    return {
+      status: 'OK',
+      message: 'OTP verified successfully',
+      access_token: accessToken,
+    };
   }
 
   async resendQRCode(userId: string) {

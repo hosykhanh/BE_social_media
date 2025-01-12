@@ -54,18 +54,7 @@ export class AuthController {
     @Headers('authorization') authHeader: string,
   ): Promise<{ status: string; message: string; access_token: string }> {
     await this.jwtAuthService.checkRoleOTP(authHeader, 'user');
-    const isValid = await this.authService.verifyOTP(userId, otp);
-
-    if (!isValid) {
-      return { status: 'err', message: 'Invalid OTP', access_token: null };
-    }
-    const res = await this.jwtAuthService.refreshToken(authHeader);
-
-    return {
-      status: 'OK',
-      message: 'OTP verified successfully',
-      access_token: res.access_token,
-    };
+    return await this.authService.verifyOTP(userId, otp);
   }
 
   @Post('resend-qrcode/:userId')
