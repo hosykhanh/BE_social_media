@@ -5,7 +5,7 @@ import { MessageService } from './message.service';
 import { MessageSchema } from '../../schema/message.schema';
 import { ChatGateway } from '../chatSocket/chat.gateway';
 import { ChatRoomModule } from '../chatRoom/chatRoom.module';
-import { AuthModule } from '../login/auth.module';
+import { AuthModule } from '../auth/auth.module';
 
 @Module({
   imports: [

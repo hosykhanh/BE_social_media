@@ -5,7 +5,7 @@ import { CommentController } from './comment.controller';
 import { CommentSchema } from 'src/schema/comment.schema';
 import { UserSchema } from 'src/schema/user.schema';
 import { PostsSchema } from 'src/schema/posts.schema';
-import { AuthModule } from '../login/auth.module';
+import { AuthModule } from '../auth/auth.module';
 
 @Module({
   imports: [

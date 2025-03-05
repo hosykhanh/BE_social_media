@@ -4,7 +4,7 @@ import { UserService } from './user.service';
 import { UserController } from './user.controller';
 import { UserSchema } from 'src/schema/user.schema';
 import { ChatRoomModule } from '../chatRoom/chatRoom.module';
-import { AuthModule } from '../login/auth.module';
+import { AuthModule } from '../auth/auth.module';
 
 @Module({
   imports: [

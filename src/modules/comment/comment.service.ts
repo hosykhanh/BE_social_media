@@ -40,14 +40,20 @@ export class CommentService {
     const savedComment = await createdComment.save();
     return this.commentModel
       .findById(savedComment._id)
-      .populate('user', '-password -confirmPassword -otpSecret')
+      .populate(
+        'user',
+        '-password -confirmPassword -otpSecret -encryptedPrivateKey -aesEncryptedKey -iv -publicKey',
+      )
       .exec();
   }
 
   async getAllComment(): Promise<Comment[]> {
     return this.commentModel
       .find()
-      .populate('user', '-password -confirmPassword -otpSecret')
+      .populate(
+        'user',
+        '-password -confirmPassword -otpSecret -encryptedPrivateKey -aesEncryptedKey -iv -publicKey',
+      )
       .populate('posts')
       .exec();
   }
@@ -55,7 +61,10 @@ export class CommentService {
   async getCommentById(id: string): Promise<Comment> {
     return this.commentModel
       .findById(id)
-      .populate('user', '-password -confirmPassword -otpSecret')
+      .populate(
+        'user',
+        '-password -confirmPassword -otpSecret -encryptedPrivateKey -aesEncryptedKey -iv -publicKey',
+      )
       .populate('posts')
       .exec();
   }
@@ -63,7 +72,10 @@ export class CommentService {
   async getCommentsByPostId(postId: string): Promise<Comment[]> {
     return this.commentModel
       .find({ posts: postId })
-      .populate('user', '-password -confirmPassword -otpSecret')
+      .populate(
+        'user',
+        '-password -confirmPassword -otpSecret -encryptedPrivateKey -aesEncryptedKey -iv -publicKey',
+      )
       .exec();
   }
 

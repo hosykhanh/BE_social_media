@@ -30,6 +30,10 @@ const UserSchema = new mongoose.Schema(
       },
     ],
     otpSecret: { type: String, default: null },
+    publicKey: { type: String, default: null },
+    encryptedPrivateKey: { type: String, default: null },
+    iv: { type: String, default: null },
+    aesEncryptedKey: { type: String, default: null },
   },
   {
     timestamps: true,

@@ -16,7 +16,7 @@ import { User } from 'src/models/user.model';
 import { CreateUserDto, UpdateUserDto } from 'src/dto/user.dto';
 import { FileInterceptor } from '@nestjs/platform-express';
 import * as XLSX from 'xlsx';
-import { JwtAuthService } from '../login/jwt.service';
+import { JwtAuthService } from '../auth/jwt.service';
 
 @Controller('users')
 export class UserController {

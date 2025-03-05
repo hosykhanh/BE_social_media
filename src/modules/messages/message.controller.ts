@@ -10,7 +10,7 @@ import {
 import { MessageService } from './message.service';
 import { Message } from 'src/models/message.model';
 import { CreateMessageDto } from 'src/dto/message.dto';
-import { JwtAuthService } from '../login/jwt.service';
+import { JwtAuthService } from '../auth/jwt.service';
 
 @Controller('messages')
 export class MessageController {

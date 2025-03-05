@@ -14,7 +14,7 @@ import { FileInterceptor } from '@nestjs/platform-express';
 import { PostsService } from './posts.service';
 import { CreatePostDto, UpdatePostDto } from 'src/dto/posts.dto';
 import { Posts } from 'src/models/posts.model';
-import { JwtAuthService } from '../login/jwt.service';
+import { JwtAuthService } from '../auth/jwt.service';
 
 @Controller('posts')
 export class PostsController {

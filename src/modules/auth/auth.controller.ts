@@ -10,6 +10,7 @@ import {
 import { Response } from 'express';
 import { AuthService } from './auth.service';
 import { JwtAuthService } from './jwt.service';
+import { EncryptionService } from './encryption.service';
 
 @Controller('auth')
 export class AuthController {
@@ -64,5 +65,16 @@ export class AuthController {
   ) {
     await this.jwtAuthService.checkRoleOTP(authHeader, 'user');
     return await this.authService.resendQRCode(userId);
+  }
+
+  @Post('decrypt-private-key')
+  async decryptPrivateKey(@Body() body) {
+    const { encryptedPrivateKey, aesEncryptedKey, iv } = body;
+    const privateKey = EncryptionService.decryptPrivateKey(
+      encryptedPrivateKey,
+      aesEncryptedKey,
+      iv,
+    );
+    return privateKey;
   }
 }

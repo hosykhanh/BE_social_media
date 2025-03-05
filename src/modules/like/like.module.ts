@@ -5,7 +5,7 @@ import { LikeController } from './like.controller';
 import { LikeSchema } from 'src/schema/like.schema';
 import { UserSchema } from 'src/schema/user.schema';
 import { PostsSchema } from 'src/schema/posts.schema';
-import { AuthModule } from '../login/auth.module';
+import { AuthModule } from '../auth/auth.module';
 
 @Module({
   imports: [

@@ -6,7 +6,7 @@ import { AppService } from './app.service';
 import { DatabaseModule } from './modules/database/database.module';
 import { UserModule } from './modules/users/user.module';
 import { PostsModule } from './modules/posts/posts.module';
-import { AuthModule } from './modules/login/auth.module';
+import { AuthModule } from './modules/auth/auth.module';
 import { CommentModule } from './modules/comment/comment.module';
 import { LikeModule } from './modules/like/like.module';
 import { ChatRoomModule } from './modules/chatRoom/chatRoom.module';

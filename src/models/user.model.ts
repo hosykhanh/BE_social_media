@@ -20,6 +20,10 @@ export interface User extends Document {
     status: string;
   }[];
   otpSecret: string;
+  publicKey: string;
+  encryptedPrivateKey: string;
+  iv: string;
+  aesEncryptedKey: string;
 }
 
 export const UserModel = mongoose.model<User>('User', UserSchema);

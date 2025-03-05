@@ -4,7 +4,7 @@ import { ChatRoomService } from './chatRoom.service';
 import { ChatRoomController } from './chatRoom.controller';
 import { ChatRoomSchema } from 'src/schema/chatRoom.schema';
 import { UserSchema } from 'src/schema/user.schema';
-import { AuthModule } from '../login/auth.module';
+import { AuthModule } from '../auth/auth.module';
 
 @Module({
   imports: [

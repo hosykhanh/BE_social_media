@@ -7,7 +7,7 @@ import { UserSchema } from 'src/schema/user.schema';
 import { LikeModule } from '../like/like.module';
 import { CommentModule } from '../comment/comment.module';
 import { UserModule } from '../users/user.module';
-import { AuthModule } from '../login/auth.module';
+import { AuthModule } from '../auth/auth.module';
 
 @Module({
   imports: [

@@ -11,7 +11,7 @@ import {
 import { ChatRoomService } from './chatRoom.service';
 import { ChatRoomDto } from 'src/dto/chatRoom.dto';
 import { ChatRoom } from 'src/models/chatRoom.model';
-import { JwtAuthService } from '../login/jwt.service';
+import { JwtAuthService } from '../auth/jwt.service';
 
 @Controller('chatRooms')
 export class ChatRoomController {

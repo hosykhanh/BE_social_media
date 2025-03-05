@@ -11,7 +11,7 @@ import {
 import { LikeService } from './like.service';
 import { CreateLikeDto, UpdateLikeDto } from 'src/dto/like.dto';
 import { Like } from 'src/models/like.model';
-import { JwtAuthService } from '../login/jwt.service';
+import { JwtAuthService } from '../auth/jwt.service';
 
 @Controller('like')
 export class LikeController {

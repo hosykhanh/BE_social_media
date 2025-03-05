@@ -9,6 +9,7 @@ import * as moment from 'moment';
 import * as bcrypt from 'bcrypt';
 
 import { ChatRoomService } from '../chatRoom/chatRoom.service';
+import { EncryptionService } from '../auth/encryption.service';
 
 @Injectable()
 export class UserService {
@@ -29,7 +30,20 @@ export class UserService {
       salt,
     );
 
-    const createdUser = new this.userModel(createUserDto);
+    // Tạo khóa mã hóa dựa trên name và email
+    const { publicKey, encryptedPrivateKey, aesEncryptedKey, iv } =
+      await EncryptionService.generateKeyPair(
+        createUserDto.name,
+        createUserDto.email,
+      );
+
+    const createdUser = new this.userModel({
+      ...createUserDto,
+      publicKey,
+      encryptedPrivateKey,
+      aesEncryptedKey,
+      iv,
+    });
     return createdUser.save();
   }
 
@@ -113,6 +127,10 @@ export class UserService {
       .select('-password')
       .select('-confirmPassword')
       .select('-otpSecret')
+      .select('-encryptedPrivateKey')
+      .select('-aesEncryptedKey')
+      .select('-iv')
+      .select('-publicKey')
       .exec();
   }
 
@@ -142,6 +160,10 @@ export class UserService {
       .select('-password')
       .select('-confirmPassword')
       .select('-otpSecret')
+      .select('-encryptedPrivateKey')
+      .select('-aesEncryptedKey')
+      .select('-iv')
+      .select('-publicKey')
       .exec();
 
     return users;
@@ -156,9 +178,13 @@ export class UserService {
       .select('-password')
       .select('-confirmPassword')
       .select('-otpSecret')
+      .select('-encryptedPrivateKey')
+      .select('-aesEncryptedKey')
+      .select('-iv')
+      .select('-publicKey')
       .exec();
     if (updatedUser) {
-      this.logger.log(`Updated user with ID ${id}: ${updatedUser}`);
+      this.logger.log(`Updated user with ID ${id}`);
     } else {
       this.logger.log(`User with ID ${id} not found for update`);
     }
@@ -239,7 +265,11 @@ export class UserService {
         )
         .select('-password')
         .select('-confirmPassword')
-        .select('-otpSecret');
+        .select('-otpSecret')
+        .select('-encryptedPrivateKey')
+        .select('-aesEncryptedKey')
+        .select('-iv')
+        .select('-publicKey');
 
       if (updatedUser) {
         this.logger.log(`Updated avatar for user with ID ${id}`);
@@ -270,6 +300,10 @@ export class UserService {
       .select('-password')
       .select('-confirmPassword')
       .select('-otpSecret')
+      .select('-encryptedPrivateKey')
+      .select('-aesEncryptedKey')
+      .select('-iv')
+      .select('-publicKey')
       .exec();
     return user;
   }
@@ -288,6 +322,10 @@ export class UserService {
         .select('-password')
         .select('-confirmPassword')
         .select('-otpSecret')
+        .select('-encryptedPrivateKey')
+        .select('-aesEncryptedKey')
+        .select('-iv')
+        .select('-publicKey')
         .exec(),
       this.userModel
         .findByIdAndUpdate(
@@ -298,6 +336,10 @@ export class UserService {
         .select('-password')
         .select('-confirmPassword')
         .select('-otpSecret')
+        .select('-encryptedPrivateKey')
+        .select('-aesEncryptedKey')
+        .select('-iv')
+        .select('-publicKey')
         .exec(),
     ]);
 
@@ -428,6 +470,10 @@ export class UserService {
         .select('-password')
         .select('-confirmPassword')
         .select('-otpSecret')
+        .select('-encryptedPrivateKey')
+        .select('-aesEncryptedKey')
+        .select('-iv')
+        .select('-publicKey')
         .exec();
 
       if (!user) {
@@ -443,6 +489,10 @@ export class UserService {
         .select('-password')
         .select('-confirmPassword')
         .select('-otpSecret')
+        .select('-encryptedPrivateKey')
+        .select('-aesEncryptedKey')
+        .select('-iv')
+        .select('-publicKey')
         .exec();
 
       return user;
@@ -469,6 +519,10 @@ export class UserService {
         .select('-password')
         .select('-confirmPassword')
         .select('-otpSecret')
+        .select('-encryptedPrivateKey')
+        .select('-aesEncryptedKey')
+        .select('-iv')
+        .select('-publicKey')
         .exec();
 
       if (!user) {
@@ -489,6 +543,10 @@ export class UserService {
       .select('-password')
       .select('-confirmPassword')
       .select('-otpSecret')
+      .select('-encryptedPrivateKey')
+      .select('-aesEncryptedKey')
+      .select('-iv')
+      .select('-publicKey')
       .exec();
 
     return user;
@@ -511,6 +569,10 @@ export class UserService {
         .select('-password')
         .select('-confirmPassword')
         .select('-otpSecret')
+        .select('-encryptedPrivateKey')
+        .select('-aesEncryptedKey')
+        .select('-iv')
+        .select('-publicKey')
         .exec();
 
       if (!user) {

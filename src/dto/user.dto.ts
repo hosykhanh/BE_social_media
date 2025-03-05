@@ -67,6 +67,22 @@ export class CreateUserDto {
   @IsOptional()
   @IsString()
   readonly otpSecret?: string;
+
+  @IsOptional()
+  @IsString()
+  readonly publicKey?: string;
+
+  @IsOptional()
+  @IsString()
+  readonly encryptedPrivateKey?: string;
+
+  @IsOptional()
+  @IsString()
+  readonly iv?: string;
+
+  @IsOptional()
+  @IsString()
+  readonly aesEncryptedKey?: string;
 }
 
 export class UpdateUserDto {
@@ -132,4 +148,20 @@ export class UpdateUserDto {
   @IsOptional()
   @IsString()
   readonly otpSecret?: string;
+
+  @IsOptional()
+  @IsString()
+  readonly publicKey?: string;
+
+  @IsOptional()
+  @IsString()
+  readonly encryptedPrivateKey?: string;
+
+  @IsOptional()
+  @IsString()
+  readonly iv?: string;
+
+  @IsOptional()
+  @IsString()
+  readonly aesEncryptedKey?: string;
 }

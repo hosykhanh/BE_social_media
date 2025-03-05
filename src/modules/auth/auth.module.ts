@@ -9,6 +9,7 @@ import { UserSchema } from '../../schema/user.schema';
 import { ChatRoomModule } from '../chatRoom/chatRoom.module';
 import { AuthService } from './auth.service';
 import { OTPAuthService } from './otp.service';
+import { EncryptionService } from './encryption.service';
 
 @Module({
   imports: [
@@ -24,7 +25,13 @@ import { OTPAuthService } from './otp.service';
     }),
     MongooseModule.forFeature([{ name: 'User', schema: UserSchema }]),
   ],
-  providers: [JwtAuthService, UserService, AuthService, OTPAuthService],
+  providers: [
+    JwtAuthService,
+    UserService,
+    AuthService,
+    OTPAuthService,
+    EncryptionService,
+  ],
   controllers: [AuthController],
   exports: [JwtAuthService],
 })

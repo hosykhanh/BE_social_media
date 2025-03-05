@@ -56,7 +56,10 @@ export class ChatRoomService {
   async findById(id: string): Promise<ChatRoom> {
     return this.chatRoomModel
       .findById(id)
-      .populate('participants', '-password -confirmPassword -otpSecret')
+      .populate(
+        'participants',
+        '-password -confirmPassword -otpSecret -encryptedPrivateKey -aesEncryptedKey -iv -publicKey',
+      )
       .exec();
   }
 

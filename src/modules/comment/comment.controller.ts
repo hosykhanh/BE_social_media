@@ -14,7 +14,7 @@ import { FileInterceptor } from '@nestjs/platform-express';
 import { CommentService } from './comment.service';
 import { CreateCommentDto, UpdateCommentDto } from 'src/dto/comment.dto';
 import { Comment } from 'src/models/comment.model';
-import { JwtAuthService } from '../login/jwt.service';
+import { JwtAuthService } from '../auth/jwt.service';
 
 @Controller('comment')
 export class CommentController {
