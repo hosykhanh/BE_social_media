@@ -6,6 +6,7 @@ import { CommentSchema } from 'src/schema/comment.schema';
 import { UserSchema } from 'src/schema/user.schema';
 import { PostsSchema } from 'src/schema/posts.schema';
 import { AuthModule } from '../auth/auth.module';
+import { MinioModule } from '../minio/minio.module';
 
 @Module({
   imports: [
@@ -13,6 +14,7 @@ import { AuthModule } from '../auth/auth.module';
     MongooseModule.forFeature([{ name: 'Posts', schema: PostsSchema }]),
     MongooseModule.forFeature([{ name: 'User', schema: UserSchema }]),
     AuthModule,
+    MinioModule,
   ],
   providers: [CommentService],
   controllers: [CommentController],

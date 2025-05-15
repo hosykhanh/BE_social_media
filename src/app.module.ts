@@ -11,6 +11,7 @@ import { CommentModule } from './modules/comment/comment.module';
 import { LikeModule } from './modules/like/like.module';
 import { ChatRoomModule } from './modules/chatRoom/chatRoom.module';
 import { MessageModule } from './modules/messages/message.module';
+import { MinioModule } from './modules/minio/minio.module';
 
 @Module({
   imports: [
@@ -34,6 +35,7 @@ import { MessageModule } from './modules/messages/message.module';
     LikeModule,
     ChatRoomModule,
     MessageModule,
+    MinioModule,
   ],
   controllers: [AppController],
   providers: [AppService],

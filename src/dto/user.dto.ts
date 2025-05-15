@@ -54,6 +54,10 @@ export class CreateUserDto {
   readonly avatar?: string;
 
   @IsOptional()
+  @IsString()
+  readonly avatarKey?: string;
+
+  @IsOptional()
   @IsArray()
   friends?: Types.ObjectId[];
 
@@ -133,6 +137,10 @@ export class UpdateUserDto {
   @IsOptional()
   @IsString()
   readonly avatar?: string;
+
+  @IsOptional()
+  @IsString()
+  readonly avatarKey?: string;
 
   @IsOptional()
   @IsArray()

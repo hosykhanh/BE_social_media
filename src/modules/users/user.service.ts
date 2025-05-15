@@ -10,6 +10,7 @@ import * as bcrypt from 'bcrypt';
 
 import { ChatRoomService } from '../chatRoom/chatRoom.service';
 import { EncryptionService } from '../auth/encryption.service';
+import { MinioService } from '../minio/minio.service';
 
 @Injectable()
 export class UserService {
@@ -17,6 +18,7 @@ export class UserService {
   constructor(
     @InjectModel('User') private readonly userModel: Model<User>,
     private readonly chatRoomService: ChatRoomService,
+    private readonly minioService: MinioService,
   ) {}
 
   async create(createUserDto: CreateUserDto): Promise<User> {
@@ -44,7 +46,14 @@ export class UserService {
       aesEncryptedKey,
       iv,
     });
-    return createdUser.save();
+    await createdUser.save();
+    const userResponse = await this.userModel
+      .findById(createdUser._id)
+      .select(
+        'publicKey encryptedPrivateKey aesEncryptedKey iv -password -confirmPassword -otpSecret',
+      )
+      .exec();
+    return userResponse;
   }
 
   async createUsersFromExcel(data: any[]) {
@@ -140,6 +149,10 @@ export class UserService {
       .select('-password')
       .select('-confirmPassword')
       .select('-otpSecret')
+      .select('-encryptedPrivateKey')
+      .select('-aesEncryptedKey')
+      .select('-iv')
+      .select('-publicKey')
       .exec();
   }
 
@@ -228,39 +241,44 @@ export class UserService {
       const fileHash = createHash('md5').update(file.buffer).digest('hex');
 
       // Tìm kiếm file avatar trên Cloudinary bằng MD5 hash
-      const existingAvatar = await cloudinary.search
-        .expression(
-          `resource_type:image AND folder:avatars AND context.hash:${fileHash}`,
-        )
-        .execute();
+      // const existingAvatar = await cloudinary.search
+      //   .expression(
+      //     `resource_type:image AND folder:avatars AND context.hash:${fileHash}`,
+      //   )
+      //   .execute();
 
-      let avatarUrl: string;
+      // let avatarUrl: string;
 
-      // Nếu avatar đã tồn tại, trả về URL của avatar
-      if (existingAvatar.resources && existingAvatar.resources.length > 0) {
-        avatarUrl = existingAvatar.resources[0].secure_url;
-      } else {
-        // Nếu không tìm thấy avatar, tải file lên Cloudinary
-        const uploadedImage = await new Promise((resolve, reject) => {
-          cloudinary.uploader
-            .upload_stream(
-              { folder: 'avatars', context: { hash: fileHash } },
-              (error, result) => {
-                if (error) return reject(error);
-                resolve(result);
-              },
-            )
-            .end(file.buffer);
-        });
+      // // Nếu avatar đã tồn tại, trả về URL của avatar
+      // if (existingAvatar.resources && existingAvatar.resources.length > 0) {
+      //   avatarUrl = existingAvatar.resources[0].secure_url;
+      // } else {
+      //   // Nếu không tìm thấy avatar, tải file lên Cloudinary
+      //   const uploadedImage = await new Promise((resolve, reject) => {
+      //     cloudinary.uploader
+      //       .upload_stream(
+      //         { folder: 'avatars', context: { hash: fileHash } },
+      //         (error, result) => {
+      //           if (error) return reject(error);
+      //           resolve(result);
+      //         },
+      //       )
+      //       .end(file.buffer);
+      //   });
 
-        avatarUrl = (uploadedImage as any).secure_url;
-      }
+      //   avatarUrl = (uploadedImage as any).secure_url;
+      // }
+
+      const key = `avatars/${fileHash}-${file.originalname}`;
+
+      // Upload ảnh lên MinIO
+      await this.minioService.uploadFile(file, key);
 
       // Cập nhật đường dẫn avatar vào cơ sở dữ liệu
       const updatedUser = await this.userModel
         .findByIdAndUpdate(
           id,
-          { avatar: avatarUrl },
+          { avatarKey: key },
           { new: true }, // Trả về dữ liệu sau khi đã cập nhật
         )
         .select('-password')
@@ -380,7 +398,12 @@ export class UserService {
     );
 
     // Lọc những người không phải là bạn bè và tính số bạn chung lớn hơn 1
-    const allUsers = await this.userModel.find({ _id: { $ne: userId } }).exec();
+    const allUsers = await this.userModel
+      .find({ _id: { $ne: userId } })
+      .select(
+        '-password -confirmPassword -otpSecret -encryptedPrivateKey -aesEncryptedKey -iv -publicKey',
+      )
+      .exec();
     const suggestions = await Promise.all(
       allUsers
         .filter(

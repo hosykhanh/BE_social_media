@@ -8,6 +8,7 @@ import { createHash } from 'crypto';
 import { LikeService } from '../like/like.service';
 import { CommentService } from '../comment/comment.service';
 import { UserService } from '../users/user.service';
+import { MinioService } from '../minio/minio.service';
 
 @Injectable()
 export class PostsService {
@@ -17,6 +18,7 @@ export class PostsService {
     private readonly likeService: LikeService,
     private readonly commentService: CommentService,
     private readonly userService: UserService,
+    private readonly minioService: MinioService,
   ) {}
 
   private async uploadImageToCloudinary(
@@ -74,38 +76,82 @@ export class PostsService {
     const postData = { ...createPostDto, image: imageUrl };
     const createdPost = new this.postsModel(postData);
     const savedPost = await createdPost.save();
-    return this.postsModel.findById(savedPost._id).populate('user').exec();
-  }
-
-  async getAllPosts(): Promise<Posts[]> {
     return this.postsModel
-      .find()
+      .findById(savedPost._id)
       .populate(
         'user',
         '-password -confirmPassword -otpSecret -encryptedPrivateKey -aesEncryptedKey -iv -publicKey',
       )
-      .sort({ createdAt: -1 })
       .exec();
   }
 
+  async getAllPosts(): Promise<Posts[]> {
+    const posts = await this.postsModel
+      .find()
+      .populate({
+        path: 'user',
+        select:
+          '-password -confirmPassword -otpSecret -encryptedPrivateKey -aesEncryptedKey -iv -publicKey',
+      })
+      .sort({ createdAt: -1 })
+      .exec();
+
+    // Gắn avatarUrl sau populate
+    return await Promise.all(
+      posts.map(async (post) => {
+        const user = post.user as any;
+
+        if (user && user?.avatarKey) {
+          user.avatar = await this.minioService.getSignedUrl(user.avatarKey);
+        } else if (user) {
+          user.avatar = user.avatar || null;
+        }
+
+        return post;
+      }),
+    );
+  }
+
   async getPostsById(id: string): Promise<Posts> {
-    return this.postsModel
+    const post = await this.postsModel
       .findById(id)
       .populate(
         'user',
         '-password -confirmPassword -otpSecret -encryptedPrivateKey -aesEncryptedKey -iv -publicKey',
       )
       .exec();
+
+    const user = post?.user as any;
+
+    if (user && user?.avatarKey) {
+      user.avatar = await this.minioService.getSignedUrl(user.avatarKey);
+    } else if (user) {
+      user.avatar = user.avatar || null;
+    }
+    return post;
   }
 
   async getPostsByUserId(userId: string): Promise<Posts[]> {
-    return this.postsModel
+    const posts = await this.postsModel
       .find({ user: userId })
       .populate(
         'user',
         '-password -confirmPassword -otpSecret -encryptedPrivateKey -aesEncryptedKey -iv -publicKey',
       )
       .exec();
+    return await Promise.all(
+      posts.map(async (post) => {
+        const user = post.user as any;
+
+        if (user?.avatarKey) {
+          user.avatar = await this.minioService.getSignedUrl(user.avatarKey);
+        } else {
+          user.avatar = user.avatar || null;
+        }
+
+        return post;
+      }),
+    );
   }
 
   async getPostsSortedByWeight(userId: string): Promise<Posts[]> {
@@ -126,6 +172,13 @@ export class PostsService {
     // Tính trọng số động cho mỗi bài viết
     const postsWithDynamicWeight = await Promise.all(
       posts.map(async (post) => {
+        const user = post.user as any;
+
+        if (user?.avatarKey) {
+          user.avatar = await this.minioService.getSignedUrl(user.avatarKey);
+        } else {
+          user.avatar = user.avatar || null;
+        }
         const postId = post._id.toString();
         const postUserId = post.user._id.toString();
 

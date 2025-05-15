@@ -17,6 +17,7 @@ import { CreateUserDto, UpdateUserDto } from 'src/dto/user.dto';
 import { FileInterceptor } from '@nestjs/platform-express';
 import * as XLSX from 'xlsx';
 import { JwtAuthService } from '../auth/jwt.service';
+import { UserAvatarInterceptor } from '../../interceptors/user-avatar.interceptor';
 
 @Controller('users')
 export class UserController {
@@ -56,11 +57,13 @@ export class UserController {
   }
 
   @Get()
+  @UseInterceptors(UserAvatarInterceptor)
   async findAll() {
     return this.userService.findAll();
   }
 
   @Get(':id')
+  @UseInterceptors(UserAvatarInterceptor)
   async findById(
     @Param('id') id: string,
     @Headers('authorization') authHeader: string,

@@ -18,6 +18,7 @@ const UserSchema = new mongoose.Schema(
       default:
         'https://res.cloudinary.com/di5subxsf/image/upload/v1727855470/avatars/vwbwpthtm7azpmm442sr.jpg',
     },
+    avatarKey: { type: String, default: null },
     friends: [{ type: mongoose.Schema.Types.ObjectId, ref: 'User' }],
     friendRequests: [
       {

@@ -4,12 +4,14 @@ import { Model } from 'mongoose';
 import { CreateCommentDto, UpdateCommentDto } from 'src/dto/comment.dto';
 import { Comment } from 'src/models/comment.model';
 import { v2 as cloudinary } from 'cloudinary';
+import { MinioService } from '../minio/minio.service';
 
 @Injectable()
 export class CommentService {
   private readonly logger = new Logger(CommentService.name);
   constructor(
     @InjectModel('Comment') private readonly commentModel: Model<Comment>,
+    private readonly minioService: MinioService,
   ) {}
 
   private async uploadImageToCloudinary(
@@ -48,7 +50,7 @@ export class CommentService {
   }
 
   async getAllComment(): Promise<Comment[]> {
-    return this.commentModel
+    const comments = await this.commentModel
       .find()
       .populate(
         'user',
@@ -56,6 +58,18 @@ export class CommentService {
       )
       .populate('posts')
       .exec();
+
+    return comments.map((comment) => {
+      const user = comment.user as any;
+
+      if (user && user?.avatarKey) {
+        user.avatar = this.minioService.getSignedUrl(user.avatarKey);
+      } else if (user) {
+        user.avatar = user.avatar || null;
+      }
+
+      return comment;
+    });
   }
 
   async getCommentById(id: string): Promise<Comment> {
@@ -70,13 +84,27 @@ export class CommentService {
   }
 
   async getCommentsByPostId(postId: string): Promise<Comment[]> {
-    return this.commentModel
+    const comments = await this.commentModel
       .find({ posts: postId })
       .populate(
         'user',
         '-password -confirmPassword -otpSecret -encryptedPrivateKey -aesEncryptedKey -iv -publicKey',
       )
       .exec();
+
+    return await Promise.all(
+      comments.map(async (comment) => {
+        const user = comment.user as any;
+
+        if (user && user?.avatarKey) {
+          user.avatar = await this.minioService.getSignedUrl(user.avatarKey);
+        } else if (user) {
+          user.avatar = user.avatar || null;
+        }
+
+        return comment;
+      }),
+    );
   }
 
   async getReplies(parentCommentId: string): Promise<Comment[]> {

@@ -14,6 +14,7 @@ export interface User extends Document {
   address: string;
   isAdmin: boolean;
   avatar: string;
+  avatarKey: string;
   friends: Types.ObjectId[];
   friendRequests: {
     from: Types.ObjectId;

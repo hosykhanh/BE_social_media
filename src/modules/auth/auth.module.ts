@@ -10,6 +10,7 @@ import { ChatRoomModule } from '../chatRoom/chatRoom.module';
 import { AuthService } from './auth.service';
 import { OTPAuthService } from './otp.service';
 import { EncryptionService } from './encryption.service';
+import { MinioService } from '../minio/minio.service';
 
 @Module({
   imports: [
@@ -31,6 +32,7 @@ import { EncryptionService } from './encryption.service';
     AuthService,
     OTPAuthService,
     EncryptionService,
+    MinioService,
   ],
   controllers: [AuthController],
   exports: [JwtAuthService],

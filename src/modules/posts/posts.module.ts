@@ -8,6 +8,7 @@ import { LikeModule } from '../like/like.module';
 import { CommentModule } from '../comment/comment.module';
 import { UserModule } from '../users/user.module';
 import { AuthModule } from '../auth/auth.module';
+import { MinioModule } from '../minio/minio.module';
 
 @Module({
   imports: [
@@ -17,6 +18,7 @@ import { AuthModule } from '../auth/auth.module';
     CommentModule,
     UserModule,
     AuthModule,
+    MinioModule,
   ],
   providers: [PostsService],
   controllers: [PostsController],
