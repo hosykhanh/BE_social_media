@@ -21,10 +21,18 @@ export interface User extends Document {
     status: string;
   }[];
   otpSecret: string;
-  publicKey: string;
-  encryptedPrivateKey: string;
-  iv: string;
-  aesEncryptedKey: string;
+
+  identityKey: string; // Base64 của public identity key
+  registrationId: number;
+  preKeys: {
+    keyId: number;
+    publicKey: string; // Base64
+  }[];
+  signedPreKey: {
+    keyId: number;
+    publicKey: string; // Base64
+    signature: string; // Base64
+  };
 }
 
 export const UserModel = mongoose.model<User>('User', UserSchema);

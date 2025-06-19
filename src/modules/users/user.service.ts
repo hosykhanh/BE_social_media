@@ -1,15 +1,18 @@
 import { Injectable, Logger, NotFoundException } from '@nestjs/common';
 import { InjectModel } from '@nestjs/mongoose';
 import { Model, Types } from 'mongoose';
-import { CreateUserDto, UpdateUserDto } from 'src/dto/user.dto';
+import {
+  CreateUserDto,
+  UpdateUserDto,
+  UserSignalPublicDto,
+} from 'src/dto/user.dto';
 import { User } from 'src/models/user.model';
-import { v2 as cloudinary } from 'cloudinary';
+// import { v2 as cloudinary } from 'cloudinary';
 import { createHash } from 'crypto';
 import * as moment from 'moment';
 import * as bcrypt from 'bcrypt';
 
 import { ChatRoomService } from '../chatRoom/chatRoom.service';
-import { EncryptionService } from '../auth/encryption.service';
 import { MinioService } from '../minio/minio.service';
 
 @Injectable()
@@ -33,25 +36,19 @@ export class UserService {
     );
 
     // Tạo khóa mã hóa dựa trên name và email
-    const { publicKey, encryptedPrivateKey, aesEncryptedKey, iv } =
-      await EncryptionService.generateKeyPair(
-        createUserDto.name,
-        createUserDto.email,
-      );
+    // const { publicKey, encryptedPrivateKey, aesEncryptedKey, iv } =
+    //   await EncryptionService.generateKeyPair(
+    //     createUserDto.name,
+    //     createUserDto.email,
+    //   );
 
     const createdUser = new this.userModel({
       ...createUserDto,
-      publicKey,
-      encryptedPrivateKey,
-      aesEncryptedKey,
-      iv,
     });
     await createdUser.save();
     const userResponse = await this.userModel
       .findById(createdUser._id)
-      .select(
-        'publicKey encryptedPrivateKey aesEncryptedKey iv -password -confirmPassword -otpSecret',
-      )
+      .select('-password -confirmPassword -otpSecret')
       .exec();
     return userResponse;
   }
@@ -78,6 +75,19 @@ export class UserService {
         email: `${identifier}@gmail.com`,
         password: `${identifier}abc`,
         confirmPassword: `${identifier}abc`,
+        identityKey: 'identity-key-base64',
+        registrationId: 12345,
+        preKeys: [
+          {
+            keyId: 1,
+            publicKey: 'pre-key-public-key-base64',
+          },
+        ],
+        signedPreKey: {
+          keyId: 1,
+          publicKey: 'signed-pre-key-public-key-base64',
+          signature: 'signed-pre-key-signature-base64',
+        },
       };
     });
 
@@ -162,6 +172,23 @@ export class UserService {
 
   async findByEmail(email: string): Promise<User | null> {
     return this.userModel.findOne({ email }).exec();
+  }
+
+  async getSignalPublicBundle(userId: string): Promise<UserSignalPublicDto> {
+    const user = await this.userModel
+      .findById(userId)
+      .select('identityKey registrationId preKeys signedPreKey');
+
+    if (!user) {
+      throw new NotFoundException('User not found');
+    }
+
+    return {
+      identityKey: user.identityKey,
+      registrationId: user.registrationId,
+      preKeys: user.preKeys,
+      signedPreKey: user.signedPreKey,
+    };
   }
 
   async searchUsers(userId: string, search: string): Promise<User[]> {

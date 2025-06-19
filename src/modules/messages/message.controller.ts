@@ -6,6 +6,7 @@ import {
   Param,
   Delete,
   Headers,
+  Put,
 } from '@nestjs/common';
 import { MessageService } from './message.service';
 import { Message } from 'src/models/message.model';
@@ -35,6 +36,16 @@ export class MessageController {
   ): Promise<Message[]> {
     await this.jwtAuthService.checkRole(authHeader, 'user');
     return this.messageService.findAllMessages(chatRoomId);
+  }
+
+  @Put(':id')
+  async updateMessage(
+    @Param('id') id: string,
+    @Body() updateMessageDto: CreateMessageDto,
+    @Headers('authorization') authHeader: string,
+  ): Promise<Message> {
+    await this.jwtAuthService.checkRole(authHeader, 'user');
+    return this.messageService.updateMessage(id, updateMessageDto);
   }
 
   @Delete(':id')

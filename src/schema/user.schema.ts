@@ -31,10 +31,21 @@ const UserSchema = new mongoose.Schema(
       },
     ],
     otpSecret: { type: String, default: null },
-    publicKey: { type: String, default: null },
-    encryptedPrivateKey: { type: String, default: null },
-    iv: { type: String, default: null },
-    aesEncryptedKey: { type: String, default: null },
+
+    identityKey: { type: String, required: true }, // Base64 của public identity key
+    registrationId: { type: Number, required: true },
+    preKeys: [
+      {
+        keyId: { type: Number, required: true },
+        publicKey: { type: String, required: true }, // Base64
+      },
+    ],
+    signedPreKey: {
+      keyId: { type: Number, required: true },
+      publicKey: { type: String, required: true }, // Base64
+      signature: { type: String, required: true }, // Base64
+    },
+    lastPreKeyId: { type: Number, default: 0 },
   },
   {
     timestamps: true,

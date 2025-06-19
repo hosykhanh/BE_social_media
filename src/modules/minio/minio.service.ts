@@ -42,7 +42,7 @@ export class MinioService {
     return key;
   }
 
-  async getSignedUrl(key: string, expiresIn = 86400): Promise<string> {
+  async getSignedUrl(key: string, expiresIn = 800): Promise<string> {
     const command = new GetObjectCommand({
       Bucket: this.bucketName,
       Key: key,

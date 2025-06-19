@@ -13,7 +13,11 @@ import {
 } from '@nestjs/common';
 import { UserService } from './user.service';
 import { User } from 'src/models/user.model';
-import { CreateUserDto, UpdateUserDto } from 'src/dto/user.dto';
+import {
+  CreateUserDto,
+  UpdateUserDto,
+  UserSignalPublicDto,
+} from 'src/dto/user.dto';
 import { FileInterceptor } from '@nestjs/platform-express';
 import * as XLSX from 'xlsx';
 import { JwtAuthService } from '../auth/jwt.service';
@@ -58,7 +62,8 @@ export class UserController {
 
   @Get()
   @UseInterceptors(UserAvatarInterceptor)
-  async findAll() {
+  async findAll(@Headers('authorization') authHeader: string): Promise<User[]> {
+    await this.jwtAuthService.checkRole(authHeader, 'user');
     return this.userService.findAll();
   }
 
@@ -75,6 +80,13 @@ export class UserController {
   @Get('byEmail/:email')
   async findByEmail(@Param('email') email: string): Promise<User | null> {
     return this.userService.findByEmail(email);
+  }
+
+  @Get(':id/signal-bundle')
+  async getSignalPublicBundle(
+    @Param('id') userId: string,
+  ): Promise<UserSignalPublicDto> {
+    return this.userService.getSignalPublicBundle(userId);
   }
 
   @Get(':id/suggestions')
@@ -171,6 +183,7 @@ export class UserController {
 
   @Put(':id/avatar')
   @UseInterceptors(FileInterceptor('avatar'))
+  @UseInterceptors(UserAvatarInterceptor)
   async updateAvatar(
     @Param('id') id: string,
     @UploadedFile() file: Express.Multer.File,

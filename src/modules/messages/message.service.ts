@@ -3,12 +3,14 @@ import { InjectModel } from '@nestjs/mongoose';
 import { Model } from 'mongoose';
 import { CreateMessageDto } from 'src/dto/message.dto';
 import { Message } from 'src/models/message.model';
+import { MinioService } from '../minio/minio.service';
 
 @Injectable()
 export class MessageService {
   private readonly logger = new Logger(MessageService.name);
   constructor(
     @InjectModel('Message') private readonly messageModel: Model<Message>,
+    private readonly minioService: MinioService,
   ) {}
 
   async createMessage(createMessageDto: CreateMessageDto): Promise<Message> {
@@ -19,23 +21,41 @@ export class MessageService {
     const populatedMessage = await this.messageModel
       .findById(createdMessage._id)
       .populate('chatRoom')
-      .populate(
-        'sender',
-        '-password -confirmPassword -otpSecret -encryptedPrivateKey -aesEncryptedKey -iv -publicKey',
-      )
+      .populate('sender', '-password -confirmPassword -otpSecret')
       .exec();
+    const user = populatedMessage.sender as any;
+
+    if (user && user?.avatarKey) {
+      user.avatar = await this.minioService.getSignedUrl(user.avatarKey);
+    } else if (user) {
+      user.avatar = user.avatar || null;
+    }
 
     return populatedMessage;
   }
 
   async findAllMessages(chatRoomId: string): Promise<Message[]> {
-    return this.messageModel
+    const messages = await this.messageModel
       .find({ chatRoom: chatRoomId })
       .populate(
         'sender',
         '-password -confirmPassword -otpSecret -encryptedPrivateKey -aesEncryptedKey -iv -publicKey',
       )
       .exec();
+
+    return await Promise.all(
+      messages.map(async (message) => {
+        const user = message.sender as any;
+
+        if (user && user?.avatarKey) {
+          user.avatar = await this.minioService.getSignedUrl(user.avatarKey);
+        } else if (user) {
+          user.avatar = user.avatar || null;
+        }
+
+        return message;
+      }),
+    );
   }
 
   async getMessageById(id: string): Promise<Message> {
@@ -46,6 +66,14 @@ export class MessageService {
         'sender',
         '-password -confirmPassword -otpSecret -encryptedPrivateKey -aesEncryptedKey -iv -publicKey',
       )
+      .exec();
+  }
+
+  async updateMessage(id: string, updateMessageDto: CreateMessageDto) {
+    return this.messageModel
+      .findByIdAndUpdate(id, updateMessageDto, { new: true })
+      .populate('chatRoom')
+      .populate('sender', '-password -confirmPassword -otpSecret')
       .exec();
   }
 

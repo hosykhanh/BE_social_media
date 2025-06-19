@@ -7,8 +7,15 @@ export class CreateMessageDto {
   @IsObject()
   sender: object;
 
-  @IsString()
-  content: string;
+  @IsObject()
+  encryptedContents: {
+    receiverId: string;
+    content: {
+      type: number;
+      body: string; // base64 string
+      registrationId: number;
+    };
+  }[];
 
   @IsOptional()
   @IsString()
@@ -33,8 +40,15 @@ export class UpdateMessageDto {
   sender?: object;
 
   @IsOptional()
-  @IsString()
-  content?: string;
+  @IsObject()
+  encryptedContents?: {
+    receiverId: string;
+    content: {
+      type: number;
+      body: string; // base64 string
+      registrationId: number;
+    };
+  }[];
 
   @IsOptional()
   @IsString()

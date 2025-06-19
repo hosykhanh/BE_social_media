@@ -74,19 +74,26 @@ export class CreateUserDto {
 
   @IsOptional()
   @IsString()
-  readonly publicKey?: string;
+  readonly identityKey: string;
 
   @IsOptional()
-  @IsString()
-  readonly encryptedPrivateKey?: string;
+  @IsNumber()
+  readonly registrationId: number;
 
   @IsOptional()
-  @IsString()
-  readonly iv?: string;
+  @IsArray()
+  readonly preKeys: {
+    keyId: number;
+    publicKey: string;
+  }[];
 
   @IsOptional()
-  @IsString()
-  readonly aesEncryptedKey?: string;
+  @IsArray()
+  readonly signedPreKey: {
+    keyId: number;
+    publicKey: string;
+    signature: string;
+  };
 }
 
 export class UpdateUserDto {
@@ -156,20 +163,18 @@ export class UpdateUserDto {
   @IsOptional()
   @IsString()
   readonly otpSecret?: string;
+}
 
-  @IsOptional()
-  @IsString()
-  readonly publicKey?: string;
-
-  @IsOptional()
-  @IsString()
-  readonly encryptedPrivateKey?: string;
-
-  @IsOptional()
-  @IsString()
-  readonly iv?: string;
-
-  @IsOptional()
-  @IsString()
-  readonly aesEncryptedKey?: string;
+export class UserSignalPublicDto {
+  readonly identityKey: string;
+  readonly registrationId: number;
+  readonly preKeys: {
+    keyId: number;
+    publicKey: string;
+  }[];
+  readonly signedPreKey: {
+    keyId: number;
+    publicKey: string;
+    signature: string;
+  };
 }

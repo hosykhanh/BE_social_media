@@ -6,7 +6,14 @@ import { User } from './user.model';
 export interface Message extends Document {
   chatRoom: ChatRoom;
   sender: User;
-  content: string;
+  encryptedContents: {
+    receiverId: User;
+    content: {
+      type: number;
+      body: string;
+      registrationId: number;
+    };
+  }[];
   messageType: string;
   createdAt?: Date;
   updatedAt?: Date;
